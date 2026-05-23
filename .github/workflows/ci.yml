@@ -173,9 +173,8 @@ jobs:
       contents: write
     steps:
       - name: Create Release
-      uses: softprops/action-gh-release@v3
-      with:
-        files: assets/*
-        generate_release_notes: true
-        draft: false
-        prerelease: false
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          draft: false
+          prerelease: false
