@@ -12,5 +12,10 @@ namespace LibGit2Sharp.Core
         public RemoteRedirectMode FollowRedirects = RemoteRedirectMode.Initial;
         public GitStrArrayManaged CustomHeaders;
         public GitStrArrayManaged remote_push_options;
+
+        public GitPushOptions()
+        {
+            ProxyOptions = new GitProxyOptions();
+        }
     }
 }

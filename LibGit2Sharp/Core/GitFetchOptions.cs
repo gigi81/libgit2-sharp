@@ -14,5 +14,10 @@ namespace LibGit2Sharp.Core
         public int Depth = 0; // GIT_FETCH_DEPTH_FULL
         public RemoteRedirectMode FollowRedirects = RemoteRedirectMode.Initial;
         public GitStrArrayManaged CustomHeaders;
+
+        public GitFetchOptions()
+        {
+            ProxyOptions = new GitProxyOptions();
+        }
     }
 }
