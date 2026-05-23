@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using LibGit2Sharp.Tests.TestHelpers;
 using Xunit;
-using Xunit.Extensions;
 
 namespace LibGit2Sharp.Tests
 {
@@ -175,7 +174,7 @@ namespace LibGit2Sharp.Tests
             }
         }
 
-        [SkippableTheory]
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public void CanStageANewFileWithAFullPath(bool ignorecase)

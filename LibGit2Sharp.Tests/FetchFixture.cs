@@ -49,7 +49,7 @@ namespace LibGit2Sharp.Tests
             }
         }
 
-        [SkippableFact]
+        [Fact]
         public void CanFetchIntoAnEmptyRepositoryWithCredentials()
         {
             InconclusiveIf(() => string.IsNullOrEmpty(Constants.PrivateRepoUrl),

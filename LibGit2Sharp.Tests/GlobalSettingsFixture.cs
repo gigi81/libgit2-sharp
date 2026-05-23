@@ -54,12 +54,12 @@ namespace LibGit2Sharp.Tests
             Assert.Throws<LibGit2SharpException>(() => { GlobalSettings.NativeLibraryPath = "C:/Foo"; });
         }
 
-        [SkippableTheory]
+        [Theory]
         [InlineData("x86")]
         [InlineData("x64")]
         public void LoadFromSpecifiedPath(string architecture)
         {
-            Skip.IfNot(Platform.IsRunningOnNetFramework(), ".NET Framework only test.");
+            Assert.SkipUnless(Platform.IsRunningOnNetFramework(), ".NET Framework only test.");
 
             var nativeDllFileName = NativeDllName.Name + ".dll";
             var testDir = Path.GetDirectoryName(typeof(GlobalSettingsFixture).Assembly.Location);

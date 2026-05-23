@@ -195,7 +195,7 @@ namespace LibGit2Sharp.Tests
             Assert.True(checkoutWasCalled);
         }
 
-        [SkippableFact]
+        [Fact]
         public void CanCloneWithCredentials()
         {
             InconclusiveIf(() => string.IsNullOrEmpty(Constants.PrivateRepoUrl),
@@ -264,7 +264,7 @@ namespace LibGit2Sharp.Tests
         //    }
         //}
 
-        [SkippableTheory]
+        [Theory]
         [InlineData("https://github.com/libgit2/TestGitRepository.git", "github.com", typeof(CertificateX509))]
         //[InlineData("git@github.com:libgit2/TestGitRepository.git", "github.com", typeof(CertificateSsh))]
         public void CanInspectCertificateOnClone(string url, string hostname, Type certType)

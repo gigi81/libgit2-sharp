@@ -292,7 +292,7 @@ namespace LibGit2Sharp.Tests.TestHelpers
                 return;
             }
 
-            throw new SkipException(message);
+            Assert.Skip(message);
         }
 
         protected void RequiresDotNetOrMonoGreaterThanOrEqualTo(System.Version minimumVersion)

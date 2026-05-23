@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks Condition="'$(TargetFrameworks)'==''">net472;net8.0;net10.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,10 +15,9 @@
     <PackageReference Include="GitHubActionsTestLogger" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.console" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.v3.runner.console" />
     <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="xunit.skippablefact" />
   </ItemGroup>
 
   <ItemGroup>

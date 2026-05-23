@@ -41,3 +41,4 @@ _NCrunch_LibGit2Sharp/
 artifacts/
 worktree.playlist
 .idea
+.DS_Store

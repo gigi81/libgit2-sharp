@@ -113,7 +113,7 @@ namespace LibGit2Sharp.Tests
             }
         }
 
-        [SkippableFact]
+        [Fact]
         public void CanListRemoteReferencesWithCredentials()
         {
             InconclusiveIf(() => string.IsNullOrEmpty(Constants.PrivateRepoUrl),

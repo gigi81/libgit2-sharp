@@ -23,7 +23,7 @@ namespace LibGit2Sharp.Tests
             }
         }
 
-        [SkippableTheory]
+        [Theory]
         [InlineData("false", "hey there\n")]
         [InlineData("input", "hey there\n")]
         [InlineData("true", "hey there\r\n")]
@@ -132,7 +132,7 @@ namespace LibGit2Sharp.Tests
             }
         }
 
-        [SkippableTheory]
+        [Theory]
         [InlineData("false", "hey there\n")]
         [InlineData("input", "hey there\n")]
         [InlineData("true", "hey there\r\n")]
