@@ -1,19 +1,21 @@
-# LibGit2Sharp
+# LibGit2Sharp (Fork)
 
-[![CI](https://github.com/libgit2/libgit2sharp/actions/workflows/ci.yml/badge.svg)](https://github.com/libgit2/libgit2sharp/actions/workflows/ci.yml) 
+[![CI](https://github.com/gigi81/libgit2-sharp/actions/workflows/ci.yml/badge.svg)](https://github.com/gigi81/libgit2-sharp/actions/workflows/ci.yml) 
 [![NuGet version (LibGit2Sharp)](https://img.shields.io/nuget/v/LibGit2Sharp.svg)](https://www.nuget.org/packages/LibGit2Sharp/)
 
-**LibGit2Sharp brings all the might and speed of [libgit2](https://libgit2.org/), a native Git implementation, to the managed world of .NET**
+**This is a fork of [libgit2sharp](https://github.com/libgit2/libgit2sharp) with the aim to update the underlying build of the libgit2 native library.**
+
+LibGit2Sharp brings all the might and speed of [libgit2](https://libgit2.org/), a native Git implementation, to the managed world of .NET
 
 ## Online resources
 
 - [NuGet package](http://nuget.org/List/Packages/LibGit2Sharp)
-- [Source code](https://github.com/libgit2/libgit2sharp/)
+- [Source code](https://github.com/gigi81/libgit2-sharp/)
 
 ## Troubleshooting and support
 
 - Usage or programming related question? Post it on [StackOverflow](http://stackoverflow.com/questions/tagged/libgit2sharp) using the tag *libgit2sharp*
-- Found a bug or missing a feature? Feed the [issue tracker](https://github.com/libgit2/libgit2sharp/issues)
+- Found a bug or missing a feature? Feed the [issue tracker](https://github.com/gigi81/libgit2-sharp/issues)
 - Announcements and related miscellanea through Twitter ([@libgit2sharp](http://twitter.com/libgit2sharp))
 
 ## Quick contributing guide
@@ -22,7 +24,7 @@
 - Create a topic specific branch. Add some nice feature. Do not forget the tests ;-)
 - Send a Pull Request to spread the fun!
 
-More thorough information is available in the [wiki](https://github.com/libgit2/libgit2sharp/wiki).
+More thorough information is available in the [original wiki](https://github.com/libgit2/libgit2sharp/wiki).
 
 ## Optimizing unit testing
 
@@ -38,9 +40,9 @@ You can do a few things to optimize running unit tests on Windows:
 
 ## Authors
 
-- **Code:** The LibGit2Sharp [contributors](https://github.com/libgit2/libgit2sharp/contributors)
+- **Code:** The LibGit2Sharp [original contributors](https://github.com/libgit2/libgit2sharp/contributors) and [fork contributors](https://github.com/gigi81/libgit2-sharp/contributors)
 - **Logo:** [Jason "blackant" Long](https://github.com/jasonlong)
 
 ## License
 
-The MIT license (Refer to the [LICENSE.md](https://github.com/libgit2/libgit2sharp/blob/master/LICENSE.md) file)
+The MIT license (Refer to the [LICENSE.md](https://github.com/gigi81/libgit2-sharp/blob/master/LICENSE.md) file)

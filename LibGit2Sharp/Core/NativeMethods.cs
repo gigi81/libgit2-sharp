@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using LibGit2Sharp.Core.Handles;
+// ReSharper disable InconsistentNaming
 
 // Restrict the set of directories where the native library is loaded from to safe directories.
 [assembly: DefaultDllImportSearchPaths(DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.ApplicationDirectory | DllImportSearchPath.SafeDirectories)]
