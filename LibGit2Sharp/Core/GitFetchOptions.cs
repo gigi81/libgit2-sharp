@@ -3,16 +3,29 @@ using System.Runtime.InteropServices;
 namespace LibGit2Sharp.Core
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal class GitFetchOptions
+    internal struct GitFetchOptions
     {
-        public int Version = 1;
+        public int Version;
         public GitRemoteCallbacks RemoteCallbacks;
         public FetchPruneStrategy Prune;
-        public bool UpdateFetchHead = true;
+        public bool UpdateFetchHead;
         public TagFetchMode download_tags;
-        public GitProxyOptions ProxyOptions = new();
-        public int Depth = 0; // GIT_FETCH_DEPTH_FULL
-        public RemoteRedirectMode FollowRedirects = RemoteRedirectMode.Initial;
+        public GitProxyOptions ProxyOptions;
+        public int Depth;
+        public RemoteRedirectMode FollowRedirects;
         public GitStrArrayManaged CustomHeaders;
+
+        public GitFetchOptions()
+        {
+            Version = 1;
+            RemoteCallbacks = default;
+            Prune = default;
+            UpdateFetchHead = true;
+            download_tags = default;
+            ProxyOptions = new GitProxyOptions();
+            Depth = 0;
+            FollowRedirects = RemoteRedirectMode.Initial;
+            CustomHeaders = default;
+        }
     }
 }
