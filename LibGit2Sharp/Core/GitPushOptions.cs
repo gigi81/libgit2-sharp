@@ -8,14 +8,9 @@ namespace LibGit2Sharp.Core
         public int Version = 1;
         public int PackbuilderDegreeOfParallelism;
         public GitRemoteCallbacks RemoteCallbacks;
-        public GitProxyOptions ProxyOptions;
+        public GitProxyOptions ProxyOptions = new();
         public RemoteRedirectMode FollowRedirects = RemoteRedirectMode.Initial;
         public GitStrArrayManaged CustomHeaders;
         public GitStrArrayManaged remote_push_options;
-
-        public GitPushOptions()
-        {
-            ProxyOptions = new GitProxyOptions();
-        }
     }
 }
