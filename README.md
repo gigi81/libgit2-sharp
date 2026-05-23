@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/gigi81/libgit2-sharp/actions/workflows/ci.yml/badge.svg)](https://github.com/gigi81/libgit2-sharp/actions/workflows/ci.yml)
 [![NuGet version (LibGit2Sharp)](https://img.shields.io/nuget/v/LibGit2SharpFork.svg)](https://www.nuget.org/packages/LibGit2SharpFork/)
+[![codecov](https://codecov.io/github/gigi81/libgit2-sharp/graph/badge.svg?token=TGcQMBPMnQ)](https://codecov.io/github/gigi81/libgit2-sharp)
 
 **This is a fork of [libgit2sharp](https://github.com/libgit2/libgit2sharp) with the aim to update the underlying build of the libgit2 native library.**
 
