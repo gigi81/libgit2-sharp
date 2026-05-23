@@ -86,7 +86,7 @@ namespace LibGit2Sharp
             options ??= new SubmoduleUpdateOptions();
 
             using var handle = Proxy.git_submodule_lookup(repo.Handle, name) ?? throw new NotFoundException("Submodule lookup failed for '{0}'.", name);
-            using var checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options);
+            using var checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options);
             using var fetchOptionsWrapper = new GitFetchOptionsWrapper();
 
             var gitCheckoutOptions = checkoutOptionsWrapper.Options;

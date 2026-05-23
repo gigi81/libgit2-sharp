@@ -140,7 +140,7 @@ namespace LibGit2Sharp.Core
             IntPtr payload);
 
     [StructLayout(LayoutKind.Sequential)]
-    internal struct GitCheckoutOpts
+    internal struct GitCheckoutOptions
     {
         public uint version;
 
@@ -174,7 +174,7 @@ namespace LibGit2Sharp.Core
 
     /// <summary>
     /// An inteface for objects that specify parameters from which a
-    /// GitCheckoutOpts struct can be populated.
+    /// GitCheckoutOptions struct can be populated.
     /// </summary>
     internal interface IConvertableToGitCheckoutOpts
     {

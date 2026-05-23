@@ -7,7 +7,7 @@ namespace LibGit2Sharp.Core
     {
         public uint Version;
 
-        public GitCheckoutOpts CheckoutOptions;
+        public GitCheckoutOptions CheckoutOptions;
 
         public GitFetchOptions FetchOptions;
 

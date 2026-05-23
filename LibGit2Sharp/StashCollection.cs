@@ -154,9 +154,9 @@ namespace LibGit2Sharp
                 options = new StashApplyOptions();
             }
 
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options.CheckoutOptions ?? new CheckoutOptions()))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options.CheckoutOptions ?? new CheckoutOptions()))
             {
-                var opts = new GitStashApplyOpts
+                var opts = new GitStashApplyOptions
                 {
                     CheckoutOptions = checkoutOptionsWrapper.Options,
                     Flags = options.ApplyModifiers,
@@ -197,9 +197,9 @@ namespace LibGit2Sharp
                 options = new StashApplyOptions();
             }
 
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options.CheckoutOptions ?? new CheckoutOptions()))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options.CheckoutOptions ?? new CheckoutOptions()))
             {
-                var opts = new GitStashApplyOpts
+                var opts = new GitStashApplyOptions
                 {
                     CheckoutOptions = checkoutOptionsWrapper.Options,
                     Flags = options.ApplyModifiers,

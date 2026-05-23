@@ -924,7 +924,7 @@ namespace LibGit2Sharp
                 mergeFlags |= GitMergeFlag.GIT_MERGE_FAIL_ON_CONFLICT;
             }
 
-            var mergeOptions = new GitMergeOpts
+            var mergeOptions = new GitMergeOptions
             {
                 Version = 1,
                 MergeFileFavorFlags = options.MergeFileFavor,
@@ -965,7 +965,7 @@ namespace LibGit2Sharp
                 mergeFlags |= GitMergeFlag.GIT_MERGE_FAIL_ON_CONFLICT;
             }
 
-            var mergeOptions = new GitMergeOpts
+            var mergeOptions = new GitMergeOptions
             {
                 Version = 1,
                 MergeFileFavorFlags = options.MergeFileFavor,
@@ -1043,7 +1043,7 @@ namespace LibGit2Sharp
             }
 
 
-            var opts = new GitMergeOpts
+            var opts = new GitMergeOptions
             {
                 Version = 1,
                 MergeFileFavorFlags = options.MergeFileFavor,

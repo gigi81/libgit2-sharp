@@ -14,9 +14,9 @@ namespace LibGit2Sharp.Core
 
         public IntPtr rewrite_notes_ref;
 
-        public GitMergeOpts merge_options = new GitMergeOpts { Version = 1 };
+        public GitMergeOptions merge_options = new GitMergeOptions { Version = 1 };
 
-        public GitCheckoutOpts checkout_options = new GitCheckoutOpts { version = 1 };
+        public GitCheckoutOptions checkout_options = new GitCheckoutOptions { version = 1 };
 
         private IntPtr padding; // TODO: add git_commit_create_cb
 

@@ -51,7 +51,7 @@ namespace LibGit2Sharp
             get
             {
                 return CheckoutStrategy.GIT_CHECKOUT_SAFE |
-                       GitCheckoutOptsWrapper.CheckoutStrategyFromFileConflictStrategy(FileConflictStrategy);
+                       GitCheckoutOptionsWrapper.CheckoutStrategyFromFileConflictStrategy(FileConflictStrategy);
             }
         }
     }

@@ -791,7 +791,7 @@ namespace LibGit2Sharp
                 throw new UserCancelledException("Clone cancelled by the user.");
             }
 
-            using (var checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options))
+            using (var checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options))
             using (var fetchOptionsWrapper = new GitFetchOptionsWrapper())
             {
                 var gitCheckoutOptions = checkoutOptionsWrapper.Options;
@@ -810,7 +810,7 @@ namespace LibGit2Sharp
                 {
                     Version = 1,
                     Bare = options.IsBare ? 1 : 0,
-                    CheckoutOpts = gitCheckoutOptions,
+                    CheckoutOptions = gitCheckoutOptions,
                     FetchOpts = gitFetchOptions,
                 };
 
@@ -974,7 +974,7 @@ namespace LibGit2Sharp
         private void CheckoutTree(Tree tree, IList<string> paths, IConvertableToGitCheckoutOpts opts)
         {
 
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(opts, ToFilePaths(paths)))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(opts, ToFilePaths(paths)))
             {
                 var options = checkoutOptionsWrapper.Options;
                 Proxy.git_checkout_tree(Handle, tree.Id, ref options);
@@ -1002,9 +1002,9 @@ namespace LibGit2Sharp
         public void Reset(ResetMode resetMode, Commit commit, CheckoutOptions opts)
         {
             Ensure.ArgumentNotNull(commit, "commit");
-            Ensure.ArgumentNotNull(opts, "opts");
+            Ensure.ArgumentNotNull(opts, "options");
 
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(opts))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(opts))
             {
                 var options = checkoutOptionsWrapper.Options;
                 Proxy.git_reset(handle, commit.Id, resetMode, ref options);
@@ -1160,7 +1160,7 @@ namespace LibGit2Sharp
         /// </summary>
         public unsafe void RemoveUntrackedFiles()
         {
-            var options = new GitCheckoutOpts
+            var options = new GitCheckoutOptions
             {
                 version = 1,
                 checkout_strategy = CheckoutStrategy.GIT_CHECKOUT_REMOVE_UNTRACKED
@@ -1316,9 +1316,9 @@ namespace LibGit2Sharp
 
             RevertResult result = null;
 
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options))
             {
-                var mergeOptions = new GitMergeOpts
+                var mergeOptions = new GitMergeOptions
                 {
                     Version = 1,
                     MergeFileFavorFlags = options.MergeFileFavor,
@@ -1328,15 +1328,15 @@ namespace LibGit2Sharp
                     TargetLimit = (uint)options.TargetLimit,
                 };
 
-                GitRevertOpts gitRevertOpts = new GitRevertOpts()
+                GitRevertOptions gitRevertOptions = new GitRevertOptions()
                 {
                     Mainline = (uint)options.Mainline,
-                    MergeOpts = mergeOptions,
+                    MergeOptions = mergeOptions,
 
-                    CheckoutOpts = checkoutOptionsWrapper.Options,
+                    CheckoutOptions = checkoutOptionsWrapper.Options,
                 };
 
-                Proxy.git_revert(handle, commit.Id.Oid, gitRevertOpts);
+                Proxy.git_revert(handle, commit.Id.Oid, gitRevertOptions);
 
                 if (Index.IsFullyMerged)
                 {
@@ -1400,9 +1400,9 @@ namespace LibGit2Sharp
 
             CherryPickResult result = null;
 
-            using (var checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options))
+            using (var checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options))
             {
-                var mergeOptions = new GitMergeOpts
+                var mergeOptions = new GitMergeOptions
                 {
                     Version = 1,
                     MergeFileFavorFlags = options.MergeFileFavor,
@@ -1415,9 +1415,9 @@ namespace LibGit2Sharp
                 var gitCherryPickOpts = new GitCherryPickOptions()
                 {
                     Mainline = (uint)options.Mainline,
-                    MergeOpts = mergeOptions,
+                    MergeOptions = mergeOptions,
 
-                    CheckoutOpts = checkoutOptionsWrapper.Options,
+                    CheckoutOptions = checkoutOptionsWrapper.Options,
                 };
 
                 Proxy.git_cherrypick(handle, commit.Id.Oid, gitCherryPickOpts);
@@ -1563,7 +1563,7 @@ namespace LibGit2Sharp
                 ? GitMergeFileFlag.GIT_MERGE_FILE_IGNORE_WHITESPACE_CHANGE
                 : GitMergeFileFlag.GIT_MERGE_FILE_DEFAULT;
 
-            var mergeOptions = new GitMergeOpts
+            var mergeOptions = new GitMergeOptions
             {
                 Version = 1,
                 MergeFileFavorFlags = options.MergeFileFavor,
@@ -1574,7 +1574,7 @@ namespace LibGit2Sharp
             };
 
             bool earlyStop;
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options))
             {
                 var checkoutOpts = checkoutOptionsWrapper.Options;
 
