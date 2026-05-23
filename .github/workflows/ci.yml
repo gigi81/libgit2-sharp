@@ -30,7 +30,7 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install .NET SDK
@@ -47,7 +47,7 @@ jobs:
           dotnet --info
           uname -m
       - name: Run ${{ matrix.tfm }} tests
-        run: dotnet test LibGit2Sharp.sln --configuration Release --framework ${{ matrix.tfm }} --collect:"XPlat Code Coverage" --logger "GitHubActions" --logger "trx;LogFileName=test-results.trx" /p:ExtraDefine=LEAKS_IDENTIFYING /p:CoverletOutputFormat=opencover || true
+        run: dotnet test LibGit2Sharp.sln --configuration Release --framework ${{ matrix.tfm }} --collect:"XPlat Code Coverage" --logger "GitHubActions" --logger "trx;LogFileName=test-results.trx" /p:ExtraDefine=LEAKS_IDENTIFYING /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura || true
       - name: Test Report
         uses: dorny/test-reporter@v1.9.1
         if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
@@ -57,14 +57,14 @@ jobs:
           reporter: dotnet-trx
           fail-on-error: true
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
           name: test-results-${{ github.job }}-${{ matrix.os }}-${{ matrix.tfm }}
           path: |
             **/*.trx
       - name: Upload coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Code coverage ${{ matrix.os }} ${{ matrix.tfm }}
           path: "**/coverage.cobertura.xml"
@@ -89,14 +89,14 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Run ${{ matrix.tfm }} tests
         run: |
             git_command='git config --global --add safe.directory /app'
             auth_command='dotnet nuget update source gigi81 --username gigi81 --password "$NUGET_AUTH_TOKEN" --store-password-in-clear-text'
-            test_command='dotnet test LibGit2Sharp.sln --configuration Release --framework ${{ matrix.tfm }} --collect:"XPlat Code Coverage" --logger "GitHubActions" --logger "trx;LogFileName=test-results.trx" /p:ExtraDefine=LEAKS_IDENTIFYING /p:CoverletOutputFormat=opencover || true'
+            test_command='dotnet test LibGit2Sharp.sln --configuration Release --framework ${{ matrix.tfm }} --collect:"XPlat Code Coverage" --logger "GitHubActions" --logger "trx;LogFileName=test-results.trx" /p:ExtraDefine=LEAKS_IDENTIFYING /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura || true'
             docker run --rm --platform linux/${{ matrix.arch }} -v "$PWD:/app" -w /app -e NUGET_AUTH_TOKEN="${{ secrets.GITHUB_TOKEN }}" -e OPENSSL_ENABLE_SHA1_SIGNATURES=1 gittools/build-images:${{ matrix.distro }}-sdk-10.0 sh -c "$git_command && $auth_command && $test_command"
       - name: Test Report
         uses: dorny/test-reporter@v1.9.1
@@ -107,7 +107,7 @@ jobs:
           reporter: dotnet-trx
           fail-on-error: true
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
           name: test-results-${{ github.job }}-${{ matrix.distro }}-${{ matrix.arch }}-${{ matrix.tfm }}
@@ -116,13 +116,13 @@ jobs:
             **/TestResults/**/*.trx
             **/*.trx
       - name: Upload coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ always() }}
         with:
           name: test-results-${{ matrix.distro }}-${{ matrix.arch }}
           path: "**/*-results.trx"
       - name: Upload coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Code coverage ${{ matrix.distro }} ${{ matrix.arch }}
           path: "**/coverage.cobertura.xml"
@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.2
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install .NET SDK

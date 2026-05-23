@@ -1,7 +1,8 @@
 # LibGit2Sharp (Fork)
 
-[![CI](https://github.com/gigi81/libgit2-sharp/actions/workflows/ci.yml/badge.svg)](https://github.com/gigi81/libgit2-sharp/actions/workflows/ci.yml) 
-[![NuGet version (LibGit2Sharp)](https://img.shields.io/nuget/v/LibGit2Sharp.svg)](https://www.nuget.org/packages/LibGit2Sharp/)
+[![CI](https://github.com/gigi81/libgit2-sharp/actions/workflows/ci.yml/badge.svg)](https://github.com/gigi81/libgit2-sharp/actions/workflows/ci.yml)
+[![NuGet version (LibGit2Sharp)](https://img.shields.io/nuget/v/LibGit2SharpFork.svg)](https://www.nuget.org/packages/LibGit2SharpFork/)
+[![codecov](https://codecov.io/github/gigi81/libgit2-sharp/graph/badge.svg?token=TGcQMBPMnQ)](https://codecov.io/github/gigi81/libgit2-sharp)
 
 **This is a fork of [libgit2sharp](https://github.com/libgit2/libgit2sharp) with the aim to update the underlying build of the libgit2 native library.**
 
@@ -9,7 +10,7 @@ LibGit2Sharp brings all the might and speed of [libgit2](https://libgit2.org/), 
 
 ## Online resources
 
-- [NuGet package](http://nuget.org/List/Packages/LibGit2Sharp)
+- [NuGet package](http://nuget.org/List/Packages/LibGit2SharpFork)
 - [Source code](https://github.com/gigi81/libgit2-sharp/)
 
 ## Troubleshooting and support
