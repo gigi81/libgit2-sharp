@@ -1413,7 +1413,7 @@ namespace LibGit2Sharp.Core
         internal static extern unsafe int git_remote_fetch(
             git_remote* remote,
             ref GitStrArray refspecs,
-            GitFetchOptions fetch_opts,
+            ref GitFetchOptions fetch_opts,
             [MarshalAs(UnmanagedType.CustomMarshaler, MarshalCookie = UniqueId.UniqueIdentifier, MarshalTypeRef = typeof(StrictUtf8Marshaler))] string log_message);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
@@ -1432,7 +1432,7 @@ namespace LibGit2Sharp.Core
         internal static extern unsafe int git_remote_push(
             git_remote* remote,
             ref GitStrArray refSpecs,
-            GitPushOptions opts);
+            ref GitPushOptions opts);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe UIntPtr git_remote_refspec_count(git_remote* remote);

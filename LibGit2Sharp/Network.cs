@@ -468,7 +468,7 @@ namespace LibGit2Sharp
 
                 Proxy.git_remote_push(remoteHandle,
                                       pushRefSpecs,
-                                      gitPushOptions);
+                                      ref gitPushOptions);
             }
         }
 

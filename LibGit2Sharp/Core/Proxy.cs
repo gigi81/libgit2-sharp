@@ -2235,7 +2235,7 @@ namespace LibGit2Sharp.Core
             }
         }
 
-        public static unsafe void git_remote_push(RemoteHandle remote, IEnumerable<string> refSpecs, GitPushOptions opts)
+        public static unsafe void git_remote_push(RemoteHandle remote, IEnumerable<string> refSpecs, ref GitPushOptions opts)
         {
             var array = new GitStrArrayManaged();
 
@@ -2243,7 +2243,7 @@ namespace LibGit2Sharp.Core
             {
                 array = GitStrArrayManaged.BuildFrom(refSpecs.ToArray());
 
-                int res = NativeMethods.git_remote_push(remote, ref array.Array, opts);
+                int res = NativeMethods.git_remote_push(remote, ref array.Array, ref opts);
                 Ensure.ZeroResult(res);
             }
             finally
@@ -2278,7 +2278,7 @@ namespace LibGit2Sharp.Core
 
         public static unsafe void git_remote_fetch(
             RemoteHandle remote, IEnumerable<string> refSpecs,
-            GitFetchOptions fetchOptions, string logMessage)
+            ref GitFetchOptions fetchOptions, string logMessage)
         {
             var array = new GitStrArrayManaged();
 
@@ -2286,7 +2286,7 @@ namespace LibGit2Sharp.Core
             {
                 array = GitStrArrayManaged.BuildFrom(refSpecs.ToArray());
 
-                int res = NativeMethods.git_remote_fetch(remote, ref array.Array, fetchOptions, logMessage);
+                int res = NativeMethods.git_remote_fetch(remote, ref array.Array, ref fetchOptions, logMessage);
                 Ensure.ZeroResult(res);
             }
             finally
