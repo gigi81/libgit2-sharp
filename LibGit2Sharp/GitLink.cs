@@ -1,26 +1,25 @@
 using System.Diagnostics;
 
-namespace LibGit2Sharp
+namespace LibGit2Sharp;
+
+/// <summary>
+/// Represents a gitlink (a reference to a commit in another Git repository)
+/// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
+public class GitLink : GitObject
 {
     /// <summary>
-    /// Represents a gitlink (a reference to a commit in another Git repository)
+    /// Needed for mocking purposes.
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public class GitLink : GitObject
+    protected GitLink()
+    { }
+
+    internal GitLink(Repository repo, ObjectId id)
+        : base(repo, id)
+    { }
+
+    private string DebuggerDisplay
     {
-        /// <summary>
-        /// Needed for mocking purposes.
-        /// </summary>
-        protected GitLink()
-        { }
-
-        internal GitLink(Repository repo, ObjectId id)
-            : base(repo, id)
-        { }
-
-        private string DebuggerDisplay
-        {
-            get { return Id.ToString(); }
-        }
+        get { return Id.ToString(); }
     }
 }

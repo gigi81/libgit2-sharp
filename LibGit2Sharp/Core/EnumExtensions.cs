@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+internal static class EnumExtensions
 {
-    internal static class EnumExtensions
+    public static bool HasAny(this Enum enumInstance, IEnumerable<Enum> entries)
     {
-        public static bool HasAny(this Enum enumInstance, IEnumerable<Enum> entries)
-        {
-            return entries.Any(enumInstance.HasFlag);
-        }
+        return entries.Any(enumInstance.HasFlag);
     }
 }

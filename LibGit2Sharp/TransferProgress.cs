@@ -2,72 +2,71 @@
 using System.Globalization;
 using LibGit2Sharp.Core;
 
-namespace LibGit2Sharp
+namespace LibGit2Sharp;
+
+/// <summary>
+/// Expose progress values from a fetch operation.
+/// </summary>
+[DebuggerDisplay("{DebuggerDisplay,nq}")]
+public class TransferProgress
 {
+    private GitTransferProgress gitTransferProgress;
+
     /// <summary>
-    /// Expose progress values from a fetch operation.
+    /// Empty constructor.
     /// </summary>
-    [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public class TransferProgress
+    protected TransferProgress()
+    { }
+
+    /// <summary>
+    /// Constructor.
+    /// </summary>
+    internal TransferProgress(GitTransferProgress gitTransferProgress)
     {
-        private GitTransferProgress gitTransferProgress;
+        this.gitTransferProgress = gitTransferProgress;
+    }
 
-        /// <summary>
-        /// Empty constructor.
-        /// </summary>
-        protected TransferProgress()
-        { }
+    /// <summary>
+    /// Total number of objects.
+    /// </summary>
+    public virtual int TotalObjects
+    {
+        get { return (int)gitTransferProgress.total_objects; }
+    }
 
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        internal TransferProgress(GitTransferProgress gitTransferProgress)
+    /// <summary>
+    /// Number of objects indexed.
+    /// </summary>
+    public virtual int IndexedObjects
+    {
+        get { return (int)gitTransferProgress.indexed_objects; }
+    }
+
+    /// <summary>
+    /// Number of objects received.
+    /// </summary>
+    public virtual int ReceivedObjects
+    {
+        get { return (int)gitTransferProgress.received_objects; }
+    }
+
+    /// <summary>
+    /// Number of bytes received.
+    /// </summary>
+    public virtual long ReceivedBytes
+    {
+        get { return (long)gitTransferProgress.received_bytes; }
+    }
+
+    private string DebuggerDisplay
+    {
+        get
         {
-            this.gitTransferProgress = gitTransferProgress;
-        }
-
-        /// <summary>
-        /// Total number of objects.
-        /// </summary>
-        public virtual int TotalObjects
-        {
-            get { return (int)gitTransferProgress.total_objects; }
-        }
-
-        /// <summary>
-        /// Number of objects indexed.
-        /// </summary>
-        public virtual int IndexedObjects
-        {
-            get { return (int)gitTransferProgress.indexed_objects; }
-        }
-
-        /// <summary>
-        /// Number of objects received.
-        /// </summary>
-        public virtual int ReceivedObjects
-        {
-            get { return (int)gitTransferProgress.received_objects; }
-        }
-
-        /// <summary>
-        /// Number of bytes received.
-        /// </summary>
-        public virtual long ReceivedBytes
-        {
-            get { return (long)gitTransferProgress.received_bytes; }
-        }
-
-        private string DebuggerDisplay
-        {
-            get
-            {
-                return string.Format(CultureInfo.InvariantCulture,
-                                     "{0}/{1}, {2} bytes",
-                                     ReceivedObjects,
-                                     TotalObjects,
-                                     ReceivedBytes);
-            }
+            return string.Format(CultureInfo.InvariantCulture,
+                "{0}/{1}, {2} bytes",
+                ReceivedObjects,
+                TotalObjects,
+                ReceivedBytes);
         }
     }
 }

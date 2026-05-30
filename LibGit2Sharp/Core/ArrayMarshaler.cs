@@ -1,40 +1,39 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+internal class ArrayMarshaler<T> : IDisposable
 {
-    internal class ArrayMarshaler<T> : IDisposable
+    private readonly IntPtr[] ptrs;
+
+    public ArrayMarshaler(T[] objs)
     {
-        private readonly IntPtr[] ptrs;
+        ptrs = new IntPtr[objs.Length];
 
-        public ArrayMarshaler(T[] objs)
+        for (var i = 0; i < objs.Length; i++)
         {
-            ptrs = new IntPtr[objs.Length];
-
-            for (var i = 0; i < objs.Length; i++)
-            {
-                IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
-                ptrs[i] = ptr;
-                Marshal.StructureToPtr(objs[i], ptr, false);
-            }
+            IntPtr ptr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+            ptrs[i] = ptr;
+            Marshal.StructureToPtr(objs[i], ptr, false);
         }
+    }
 
-        public int Count
-        {
-            get { return ptrs.Length; }
-        }
+    public int Count
+    {
+        get { return ptrs.Length; }
+    }
 
-        public IntPtr[] ToArray()
-        {
-            return ptrs;
-        }
+    public IntPtr[] ToArray()
+    {
+        return ptrs;
+    }
 
-        public void Dispose()
+    public void Dispose()
+    {
+        foreach (var ptr in ptrs)
         {
-            foreach (var ptr in ptrs)
-            {
-                Marshal.FreeHGlobal(ptr);
-            }
+            Marshal.FreeHGlobal(ptr);
         }
     }
 }

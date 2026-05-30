@@ -76,29 +76,28 @@ namespace LibGit2Sharp.Core
 }
 #endif
 
-namespace LibGit2Sharp.Core.Handles
-{
+namespace LibGit2Sharp.Core.Handles;
 #if LEAKS_TRACKING
     using System.Diagnostics;
     using System.Globalization;
 #endif
 
-    internal unsafe abstract class Libgit2Object : SafeHandleZeroOrMinusOneIsInvalid
-    {
+internal unsafe abstract class Libgit2Object : SafeHandleZeroOrMinusOneIsInvalid
+{
 #if LEAKS_TRACKING
         private readonly string trace;
         private readonly Guid id;
 #endif
 
-        internal unsafe Libgit2Object(void* ptr, bool owned)
-            : this(new IntPtr(ptr), owned)
-        {
-        }
+    internal unsafe Libgit2Object(void* ptr, bool owned)
+        : this(new IntPtr(ptr), owned)
+    {
+    }
 
-        internal unsafe Libgit2Object(IntPtr ptr, bool owned)
-            : base(owned)
-        {
-            SetHandle(ptr);
+    internal unsafe Libgit2Object(IntPtr ptr, bool owned)
+        : base(owned)
+    {
+        SetHandle(ptr);
 
 #if LEAKS_TRACKING
             id = Guid.NewGuid();
@@ -106,12 +105,12 @@ namespace LibGit2Sharp.Core.Handles
 
             trace = new StackTrace(2, true).ToString();
 #endif
-        }
+    }
 
-        internal IntPtr AsIntPtr() => DangerousGetHandle();
+    internal IntPtr AsIntPtr() => DangerousGetHandle();
 
-        protected override void Dispose(bool disposing)
-        {
+    protected override void Dispose(bool disposing)
+    {
 #if LEAKS_IDENTIFYING
             bool leaked = !disposing && DangerousGetHandle() != IntPtr.Zero;
 
@@ -121,7 +120,7 @@ namespace LibGit2Sharp.Core.Handles
             }
 #endif
 
-            base.Dispose(disposing);
+        base.Dispose(disposing);
 
 #if LEAKS_TRACKING
             if (!leaked)
@@ -135,7 +134,5 @@ namespace LibGit2Sharp.Core.Handles
                 Trace.WriteLine("");
             }
 #endif
-        }
     }
 }
-

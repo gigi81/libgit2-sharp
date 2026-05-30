@@ -1,12 +1,11 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct GitError
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct GitError
-    {
-        public char* Message;
-        public GitErrorCategory Category;
-    }
+    public char* Message;
+    public GitErrorCategory Category;
 }

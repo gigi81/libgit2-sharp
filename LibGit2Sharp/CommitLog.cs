@@ -5,225 +5,224 @@ using System.Linq;
 using LibGit2Sharp.Core;
 using LibGit2Sharp.Core.Handles;
 
-namespace LibGit2Sharp
+namespace LibGit2Sharp;
+
+/// <summary>
+/// A log of commits in a <see cref="Repository"/>
+/// </summary>
+public sealed class CommitLog : IQueryableCommitLog
 {
+    private readonly Repository repo;
+    private readonly CommitFilter queryFilter;
+
     /// <summary>
-    /// A log of commits in a <see cref="Repository"/>
+    /// Initializes a new instance of the <see cref="CommitLog"/> class.
+    /// The commits will be enumerated according in reverse chronological order.
     /// </summary>
-    public sealed class CommitLog : IQueryableCommitLog
+    /// <param name="repo">The repository.</param>
+    internal CommitLog(Repository repo)
+        : this(repo, new CommitFilter())
+    { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CommitLog"/> class.
+    /// </summary>
+    /// <param name="repo">The repository.</param>
+    /// <param name="queryFilter">The filter to use in querying commits</param>
+    internal CommitLog(Repository repo, CommitFilter queryFilter)
+    {
+        this.repo = repo;
+        this.queryFilter = queryFilter;
+    }
+
+    /// <summary>
+    /// Gets the current sorting strategy applied when enumerating the log
+    /// </summary>
+    public CommitSortStrategies SortedBy
+    {
+        get { return queryFilter.SortBy; }
+    }
+
+    #region IEnumerable<Commit> Members
+
+    /// <summary>
+    /// Returns an enumerator that iterates through the log.
+    /// </summary>
+    /// <returns>An <see cref="IEnumerator{T}"/> object that can be used to iterate through the log.</returns>
+    public IEnumerator<Commit> GetEnumerator()
+    {
+        return new CommitEnumerator(repo, queryFilter);
+    }
+
+    /// <summary>
+    /// Returns an enumerator that iterates through the log.
+    /// </summary>
+    /// <returns>An <see cref="IEnumerator"/> object that can be used to iterate through the log.</returns>
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Returns the list of commits of the repository matching the specified <paramref name="filter"/>.
+    /// </summary>
+    /// <param name="filter">The options used to control which commits will be returned.</param>
+    /// <returns>A list of commits, ready to be enumerated.</returns>
+    public ICommitLog QueryBy(CommitFilter filter)
+    {
+        Ensure.ArgumentNotNull(filter, "filter");
+        Ensure.ArgumentNotNull(filter.IncludeReachableFrom, "filter.IncludeReachableFrom");
+        Ensure.ArgumentNotNullOrEmptyString(filter.IncludeReachableFrom.ToString(), "filter.IncludeReachableFrom");
+
+        return new CommitLog(repo, filter);
+    }
+
+    /// <summary>
+    /// Returns the list of commits of the repository representing the history of a file beyond renames.
+    /// </summary>
+    /// <param name="path">The file's path.</param>
+    /// <returns>A list of file history entries, ready to be enumerated.</returns>
+    public IEnumerable<LogEntry> QueryBy(string path)
+    {
+        Ensure.ArgumentNotNull(path, "path");
+
+        return new FileHistory(repo, path);
+    }
+
+    /// <summary>
+    /// Returns the list of commits of the repository representing the history of a file beyond renames.
+    /// </summary>
+    /// <param name="path">The file's path.</param>
+    /// <param name="filter">The options used to control which commits will be returned.</param>
+    /// <returns>A list of file history entries, ready to be enumerated.</returns>
+    public IEnumerable<LogEntry> QueryBy(string path, CommitFilter filter)
+    {
+        Ensure.ArgumentNotNull(path, "path");
+        Ensure.ArgumentNotNull(filter, "filter");
+
+        return new FileHistory(repo, path, filter);
+    }
+
+    private class CommitEnumerator : IEnumerator<Commit>
     {
         private readonly Repository repo;
-        private readonly CommitFilter queryFilter;
+        private readonly RevWalkerHandle handle;
+        private ObjectId currentOid;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommitLog"/> class.
-        /// The commits will be enumerated according in reverse chronological order.
-        /// </summary>
-        /// <param name="repo">The repository.</param>
-        internal CommitLog(Repository repo)
-            : this(repo, new CommitFilter())
-        { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommitLog"/> class.
-        /// </summary>
-        /// <param name="repo">The repository.</param>
-        /// <param name="queryFilter">The filter to use in querying commits</param>
-        internal CommitLog(Repository repo, CommitFilter queryFilter)
+        public CommitEnumerator(Repository repo, CommitFilter filter)
         {
             this.repo = repo;
-            this.queryFilter = queryFilter;
+            handle = Proxy.git_revwalk_new(repo.Handle);
+            repo.RegisterForCleanup(handle);
+
+            Sort(filter.SortBy);
+            Push(filter.SinceList);
+            Hide(filter.UntilList);
+            FirstParentOnly(filter.FirstParentOnly);
         }
 
-        /// <summary>
-        /// Gets the current sorting strategy applied when enumerating the log
-        /// </summary>
-        public CommitSortStrategies SortedBy
+        #region IEnumerator<Commit> Members
+
+        public Commit Current
         {
-            get { return queryFilter.SortBy; }
+            get { return repo.Lookup<Commit>(currentOid); }
         }
 
-        #region IEnumerable<Commit> Members
-
-        /// <summary>
-        /// Returns an enumerator that iterates through the log.
-        /// </summary>
-        /// <returns>An <see cref="IEnumerator{T}"/> object that can be used to iterate through the log.</returns>
-        public IEnumerator<Commit> GetEnumerator()
+        object IEnumerator.Current
         {
-            return new CommitEnumerator(repo, queryFilter);
+            get { return Current; }
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the log.
-        /// </summary>
-        /// <returns>An <see cref="IEnumerator"/> object that can be used to iterate through the log.</returns>
-        IEnumerator IEnumerable.GetEnumerator()
+        public bool MoveNext()
         {
-            return GetEnumerator();
+            ObjectId id = Proxy.git_revwalk_next(handle);
+
+            if (id == null)
+            {
+                return false;
+            }
+
+            currentOid = id;
+
+            return true;
+        }
+
+        public void Reset()
+        {
+            Proxy.git_revwalk_reset(handle);
         }
 
         #endregion
 
-        /// <summary>
-        /// Returns the list of commits of the repository matching the specified <paramref name="filter"/>.
-        /// </summary>
-        /// <param name="filter">The options used to control which commits will be returned.</param>
-        /// <returns>A list of commits, ready to be enumerated.</returns>
-        public ICommitLog QueryBy(CommitFilter filter)
+        public void Dispose()
         {
-            Ensure.ArgumentNotNull(filter, "filter");
-            Ensure.ArgumentNotNull(filter.IncludeReachableFrom, "filter.IncludeReachableFrom");
-            Ensure.ArgumentNotNullOrEmptyString(filter.IncludeReachableFrom.ToString(), "filter.IncludeReachableFrom");
-
-            return new CommitLog(repo, filter);
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        /// Returns the list of commits of the repository representing the history of a file beyond renames.
-        /// </summary>
-        /// <param name="path">The file's path.</param>
-        /// <returns>A list of file history entries, ready to be enumerated.</returns>
-        public IEnumerable<LogEntry> QueryBy(string path)
+        private void Dispose(bool disposing)
         {
-            Ensure.ArgumentNotNull(path, "path");
-
-            return new FileHistory(repo, path);
+            handle.SafeDispose();
         }
 
-        /// <summary>
-        /// Returns the list of commits of the repository representing the history of a file beyond renames.
-        /// </summary>
-        /// <param name="path">The file's path.</param>
-        /// <param name="filter">The options used to control which commits will be returned.</param>
-        /// <returns>A list of file history entries, ready to be enumerated.</returns>
-        public IEnumerable<LogEntry> QueryBy(string path, CommitFilter filter)
-        {
-            Ensure.ArgumentNotNull(path, "path");
-            Ensure.ArgumentNotNull(filter, "filter");
+        private delegate void HidePushSignature(RevWalkerHandle handle, ObjectId id);
 
-            return new FileHistory(repo, path, filter);
+        private void InternalHidePush(IList<object> identifier, HidePushSignature hidePush)
+        {
+            IEnumerable<ObjectId> oids = repo.Committishes(identifier).TakeWhile(o => o != null);
+
+            foreach (ObjectId actedOn in oids)
+            {
+                hidePush(handle, actedOn);
+            }
         }
 
-        private class CommitEnumerator : IEnumerator<Commit>
+        private void Push(IList<object> identifier)
         {
-            private readonly Repository repo;
-            private readonly RevWalkerHandle handle;
-            private ObjectId currentOid;
+            InternalHidePush(identifier, Proxy.git_revwalk_push);
+        }
 
-            public CommitEnumerator(Repository repo, CommitFilter filter)
+        private void Hide(IList<object> identifier)
+        {
+            if (identifier == null)
             {
-                this.repo = repo;
-                handle = Proxy.git_revwalk_new(repo.Handle);
-                repo.RegisterForCleanup(handle);
-
-                Sort(filter.SortBy);
-                Push(filter.SinceList);
-                Hide(filter.UntilList);
-                FirstParentOnly(filter.FirstParentOnly);
+                return;
             }
 
-            #region IEnumerator<Commit> Members
+            InternalHidePush(identifier, Proxy.git_revwalk_hide);
+        }
 
-            public Commit Current
+        private void Sort(CommitSortStrategies options)
+        {
+            Proxy.git_revwalk_sorting(handle, options);
+        }
+
+        private void FirstParentOnly(bool firstParent)
+        {
+            if (firstParent)
             {
-                get { return repo.Lookup<Commit>(currentOid); }
-            }
-
-            object IEnumerator.Current
-            {
-                get { return Current; }
-            }
-
-            public bool MoveNext()
-            {
-                ObjectId id = Proxy.git_revwalk_next(handle);
-
-                if (id == null)
-                {
-                    return false;
-                }
-
-                currentOid = id;
-
-                return true;
-            }
-
-            public void Reset()
-            {
-                Proxy.git_revwalk_reset(handle);
-            }
-
-            #endregion
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            private void Dispose(bool disposing)
-            {
-                handle.SafeDispose();
-            }
-
-            private delegate void HidePushSignature(RevWalkerHandle handle, ObjectId id);
-
-            private void InternalHidePush(IList<object> identifier, HidePushSignature hidePush)
-            {
-                IEnumerable<ObjectId> oids = repo.Committishes(identifier).TakeWhile(o => o != null);
-
-                foreach (ObjectId actedOn in oids)
-                {
-                    hidePush(handle, actedOn);
-                }
-            }
-
-            private void Push(IList<object> identifier)
-            {
-                InternalHidePush(identifier, Proxy.git_revwalk_push);
-            }
-
-            private void Hide(IList<object> identifier)
-            {
-                if (identifier == null)
-                {
-                    return;
-                }
-
-                InternalHidePush(identifier, Proxy.git_revwalk_hide);
-            }
-
-            private void Sort(CommitSortStrategies options)
-            {
-                Proxy.git_revwalk_sorting(handle, options);
-            }
-
-            private void FirstParentOnly(bool firstParent)
-            {
-                if (firstParent)
-                {
-                    Proxy.git_revwalk_simplify_first_parent(handle);
-                }
+                Proxy.git_revwalk_simplify_first_parent(handle);
             }
         }
     }
+}
 
+/// <summary>
+/// Determines the finding strategy of merge base.
+/// </summary>
+public enum MergeBaseFindingStrategy
+{
     /// <summary>
-    /// Determines the finding strategy of merge base.
+    /// Compute the best common ancestor between some commits to use in a three-way merge.
+    /// <para>
+    /// When more than two commits are provided, the computation is performed between the first commit and a hypothetical merge commit across all the remaining commits.
+    /// </para>
     /// </summary>
-    public enum MergeBaseFindingStrategy
-    {
-        /// <summary>
-        /// Compute the best common ancestor between some commits to use in a three-way merge.
-        /// <para>
-        /// When more than two commits are provided, the computation is performed between the first commit and a hypothetical merge commit across all the remaining commits.
-        /// </para>
-        /// </summary>
-        Standard,
-        /// <summary>
-        /// Compute the best common ancestor of all supplied commits, in preparation for an n-way merge.
-        /// </summary>
-        Octopus,
-    }
+    Standard,
+    /// <summary>
+    /// Compute the best common ancestor of all supplied commits, in preparation for an n-way merge.
+    /// </summary>
+    Octopus,
 }

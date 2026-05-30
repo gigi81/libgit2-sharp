@@ -1,32 +1,31 @@
 ﻿using System;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+internal class GitProxyOptionsWrapper : IDisposable
 {
-    internal class GitProxyOptionsWrapper : IDisposable
+    public GitProxyOptionsWrapper() : this(new GitProxyOptions()) { }
+
+    public GitProxyOptionsWrapper(GitProxyOptions fetchOptions)
     {
-        public GitProxyOptionsWrapper() : this(new GitProxyOptions()) { }
+        Options = fetchOptions;
+    }
 
-        public GitProxyOptionsWrapper(GitProxyOptions fetchOptions)
-        {
-            Options = fetchOptions;
-        }
+    public GitProxyOptions Options { get; private set; }
 
-        public GitProxyOptions Options { get; private set; }
+    private bool disposedValue = false;
 
-        private bool disposedValue = false;
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposedValue)
+            return;
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposedValue)
-                return;
+        EncodingMarshaler.Cleanup(Options.Url);
+        disposedValue = true;
+    }
 
-            EncodingMarshaler.Cleanup(Options.Url);
-            disposedValue = true;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
+    public void Dispose()
+    {
+        Dispose(true);
     }
 }

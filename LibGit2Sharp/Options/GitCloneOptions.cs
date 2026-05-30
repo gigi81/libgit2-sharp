@@ -1,32 +1,31 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+internal enum GitCloneLocal
 {
-    internal enum GitCloneLocal
-    {
-        CloneLocalAuto,
-        CloneLocal,
-        CloneNoLocal,
-        CloneLocalNoLinks
-    }
+    CloneLocalAuto,
+    CloneLocal,
+    CloneNoLocal,
+    CloneLocalNoLinks
+}
 
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct GitCloneOptions
-    {
-        public uint Version;
+[StructLayout(LayoutKind.Sequential)]
+internal struct GitCloneOptions
+{
+    public uint Version;
 
-        public GitCheckoutOptions CheckoutOptions;
-        public GitFetchOptions FetchOpts;
+    public GitCheckoutOptions CheckoutOptions;
+    public GitFetchOptions FetchOpts;
 
-        public int Bare;
-        public GitCloneLocal Local;
-        public IntPtr CheckoutBranch;
+    public int Bare;
+    public GitCloneLocal Local;
+    public IntPtr CheckoutBranch;
 
-        public IntPtr RepositoryCb;
-        public IntPtr RepositoryCbPayload;
+    public IntPtr RepositoryCb;
+    public IntPtr RepositoryCbPayload;
 
-        public IntPtr RemoteCb;
-        public IntPtr RemoteCbPayload;
-    }
+    public IntPtr RemoteCb;
+    public IntPtr RemoteCbPayload;
 }

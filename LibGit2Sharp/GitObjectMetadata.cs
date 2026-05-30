@@ -1,34 +1,33 @@
 ﻿using LibGit2Sharp.Core;
 
-namespace LibGit2Sharp
+namespace LibGit2Sharp;
+
+/// <summary>
+/// Exposes low level Git object metadata
+/// </summary>
+public sealed class GitObjectMetadata
 {
+    private readonly GitObjectType type;
+
     /// <summary>
-    /// Exposes low level Git object metadata
+    /// Size of the Object
     /// </summary>
-    public sealed class GitObjectMetadata
+    public long Size { get; private set; }
+
+    /// <summary>
+    /// Object Type
+    /// </summary>
+    public ObjectType Type
     {
-        private readonly GitObjectType type;
-
-        /// <summary>
-        /// Size of the Object
-        /// </summary>
-        public long Size { get; private set; }
-
-        /// <summary>
-        /// Object Type
-        /// </summary>
-        public ObjectType Type
+        get
         {
-            get
-            {
-                return type.ToObjectType();
-            }
+            return type.ToObjectType();
         }
+    }
 
-        internal GitObjectMetadata(long size, GitObjectType type)
-        {
-            this.Size = size;
-            this.type = type;
-        }
+    internal GitObjectMetadata(long size, GitObjectType type)
+    {
+        this.Size = size;
+        this.type = type;
     }
 }

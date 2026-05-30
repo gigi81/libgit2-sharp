@@ -1,37 +1,36 @@
 ﻿using Xunit;
 
-namespace LibGit2Sharp.Tests
+namespace LibGit2Sharp.Tests;
+
+public class LogFixture
 {
-    public class LogFixture
+    [Fact]
+    public void CanEnableAndDisableLogging()
     {
-        [Fact]
-        public void CanEnableAndDisableLogging()
-        {
-            // Setting logging produces a log message at level Info,
-            // ensure that we catch it.
-            LogLevel level = LogLevel.None;
-            string message = null;
+        // Setting logging produces a log message at level Info,
+        // ensure that we catch it.
+        LogLevel level = LogLevel.None;
+        string message = null;
 
-            GlobalSettings.LogConfiguration = new LogConfiguration(LogLevel.Trace, (l, m) => { level = l; message = m; });
+        GlobalSettings.LogConfiguration = new LogConfiguration(LogLevel.Trace, (l, m) => { level = l; message = m; });
 
-            Assert.Equal(LogLevel.Info, level);
-            Assert.Equal("Logging enabled at level Trace", message);
+        Assert.Equal(LogLevel.Info, level);
+        Assert.Equal("Logging enabled at level Trace", message);
 
-            // Configuring at Warning and higher means that the
-            // message at level Info should not be produced.
-            level = LogLevel.None;
-            message = null;
+        // Configuring at Warning and higher means that the
+        // message at level Info should not be produced.
+        level = LogLevel.None;
+        message = null;
 
-            GlobalSettings.LogConfiguration = new LogConfiguration(LogLevel.Warning, (l, m) => { level = l; message = m; });
+        GlobalSettings.LogConfiguration = new LogConfiguration(LogLevel.Warning, (l, m) => { level = l; message = m; });
 
-            Assert.Equal(LogLevel.None, level);
-            Assert.Null(message);
+        Assert.Equal(LogLevel.None, level);
+        Assert.Null(message);
 
-            // Similarly, turning logging off should produce no messages.
-            GlobalSettings.LogConfiguration = LogConfiguration.None;
+        // Similarly, turning logging off should produce no messages.
+        GlobalSettings.LogConfiguration = LogConfiguration.None;
 
-            Assert.Equal(LogLevel.None, level);
-            Assert.Null(message);
-        }
+        Assert.Equal(LogLevel.None, level);
+        Assert.Null(message);
     }
 }

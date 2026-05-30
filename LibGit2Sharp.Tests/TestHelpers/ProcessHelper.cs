@@ -3,34 +3,33 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace LibGit2Sharp.Tests
+namespace LibGit2Sharp.Tests;
+
+public static class ProcessHelper
 {
-    public static class ProcessHelper
+    public static (string, int) RunProcess(string fileName, string arguments, string workingDirectory = null)
     {
-        public static (string, int) RunProcess(string fileName, string arguments, string workingDirectory = null)
+        var process = new Process
         {
-            var process = new Process
+            StartInfo = new ProcessStartInfo(fileName, arguments)
             {
-                StartInfo = new ProcessStartInfo(fileName, arguments)
-                {
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true,
-                    UseShellExecute = false,
-                    WorkingDirectory = workingDirectory ?? string.Empty
-                }
-            };
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true,
+                UseShellExecute = false,
+                WorkingDirectory = workingDirectory ?? string.Empty
+            }
+        };
 
-            var output = new StringBuilder();
+        var output = new StringBuilder();
 
-            process.OutputDataReceived += (_, e) => output.AppendLine(e.Data);
-            process.ErrorDataReceived += (_, e) => output.AppendLine(e.Data);
+        process.OutputDataReceived += (_, e) => output.AppendLine(e.Data);
+        process.ErrorDataReceived += (_, e) => output.AppendLine(e.Data);
 
-            process.Start();
+        process.Start();
 
-            process.WaitForExit();
+        process.WaitForExit();
 
-            return (output.ToString(), process.ExitCode);
-        }
+        return (output.ToString(), process.ExitCode);
     }
 }

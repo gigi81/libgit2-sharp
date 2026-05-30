@@ -1,81 +1,80 @@
-﻿namespace LibGit2Sharp
+﻿namespace LibGit2Sharp;
+
+/// <summary>
+/// A Tag
+/// </summary>
+public class Tag : ReferenceWrapper<GitObject>
 {
     /// <summary>
-    /// A Tag
+    /// Needed for mocking purposes.
     /// </summary>
-    public class Tag : ReferenceWrapper<GitObject>
+    protected Tag()
+    { }
+
+    internal Tag(Repository repo, Reference reference, string canonicalName)
+        : base(repo, reference, _ => canonicalName)
+    { }
+
+    /// <summary>
+    /// Gets the optional information associated to this tag.
+    /// <para>When the <see cref="Tag"/> is a lightweight tag, <c>null</c> is returned.</para>
+    /// </summary>
+    public virtual TagAnnotation Annotation
     {
-        /// <summary>
-        /// Needed for mocking purposes.
-        /// </summary>
-        protected Tag()
-        { }
+        get { return TargetObject as TagAnnotation; }
+    }
 
-        internal Tag(Repository repo, Reference reference, string canonicalName)
-            : base(repo, reference, _ => canonicalName)
-        { }
-
-        /// <summary>
-        /// Gets the optional information associated to this tag.
-        /// <para>When the <see cref="Tag"/> is a lightweight tag, <c>null</c> is returned.</para>
-        /// </summary>
-        public virtual TagAnnotation Annotation
+    /// <summary>
+    /// Gets the <see cref="GitObject"/> that this tag points to.
+    /// </summary>
+    public virtual GitObject Target
+    {
+        get
         {
-            get { return TargetObject as TagAnnotation; }
+            GitObject target = TargetObject;
+
+            var annotation = target as TagAnnotation;
+
+            return annotation == null ? target : annotation.Target;
         }
+    }
 
-        /// <summary>
-        /// Gets the <see cref="GitObject"/> that this tag points to.
-        /// </summary>
-        public virtual GitObject Target
+    /// <summary>
+    /// Gets the peeled <see cref="GitObject"/> that this tag points to.
+    /// </summary>
+    public virtual GitObject PeeledTarget
+    {
+        get
         {
-            get
+            GitObject target = TargetObject;
+
+            var annotation = target as TagAnnotation;
+
+            while (annotation != null)
             {
-                GitObject target = TargetObject;
-
-                var annotation = target as TagAnnotation;
-
-                return annotation == null ? target : annotation.Target;
+                target = annotation.Target;
+                annotation = target as TagAnnotation;
             }
+
+            return target;
         }
+    }
 
-        /// <summary>
-        /// Gets the peeled <see cref="GitObject"/> that this tag points to.
-        /// </summary>
-        public virtual GitObject PeeledTarget
-        {
-            get
-            {
-                GitObject target = TargetObject;
+    /// <summary>
+    /// Indicates whether the tag holds any metadata.
+    /// </summary>
+    public virtual bool IsAnnotated
+    {
+        get { return Annotation != null; }
+    }
 
-                var annotation = target as TagAnnotation;
-
-                while (annotation != null)
-                {
-                    target = annotation.Target;
-                    annotation = target as TagAnnotation;
-                }
-
-                return target;
-            }
-        }
-
-        /// <summary>
-        /// Indicates whether the tag holds any metadata.
-        /// </summary>
-        public virtual bool IsAnnotated
-        {
-            get { return Annotation != null; }
-        }
-
-        /// <summary>
-        /// Removes redundent leading namespaces (regarding the kind of
-        /// reference being wrapped) from the canonical name.
-        /// </summary>
-        /// <returns>The friendly shortened name</returns>
-        protected override string Shorten()
-        {
-            return CanonicalName.Substring(Reference.TagPrefix.Length);
-        }
+    /// <summary>
+    /// Removes redundent leading namespaces (regarding the kind of
+    /// reference being wrapped) from the canonical name.
+    /// </summary>
+    /// <returns>The friendly shortened name</returns>
+    protected override string Shorten()
+    {
+        return CanonicalName.Substring(Reference.TagPrefix.Length);
     }
 }

@@ -1,7 +1,6 @@
-﻿namespace LibGit2Sharp.Tests.TestHelpers
+﻿namespace LibGit2Sharp.Tests.TestHelpers;
+
+public interface IPostTestDirectoryRemover
 {
-    public interface IPostTestDirectoryRemover
-    {
-        void Register(string directoryPath);
-    }
+    void Register(string directoryPath);
 }

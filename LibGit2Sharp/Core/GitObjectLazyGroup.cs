@@ -2,40 +2,39 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using LibGit2Sharp.Core.Handles;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+internal class GitObjectLazyGroup : LazyGroup<ObjectHandle>
 {
-    internal class GitObjectLazyGroup : LazyGroup<ObjectHandle>
+    private readonly ObjectId id;
+
+    public GitObjectLazyGroup(Repository repo, ObjectId id)
+        : base(repo)
     {
-        private readonly ObjectId id;
+        this.id = id;
+    }
 
-        public GitObjectLazyGroup(Repository repo, ObjectId id)
-            : base(repo)
+    protected override void EvaluateInternal(Action<ObjectHandle> evaluator)
+    {
+        using (var osw = new ObjectSafeWrapper(id, repo.Handle))
         {
-            this.id = id;
+            evaluator(osw.ObjectPtr);
         }
-
-        protected override void EvaluateInternal(Action<ObjectHandle> evaluator)
-        {
-            using (var osw = new ObjectSafeWrapper(id, repo.Handle))
-            {
-                evaluator(osw.ObjectPtr);
-            }
-        }
+    }
 
 #if NET
-        public static ILazy<TResult> Singleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(Repository repo, ObjectId id, Func<ObjectHandle, TResult> resultSelector, bool throwIfMissing = false)
+    public static ILazy<TResult> Singleton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TResult>(Repository repo, ObjectId id, Func<ObjectHandle, TResult> resultSelector, bool throwIfMissing = false)
 #else
         public static ILazy<TResult> Singleton<TResult>(Repository repo, ObjectId id, Func<ObjectHandle, TResult> resultSelector, bool throwIfMissing = false)
 #endif
 
+    {
+        return Singleton(() =>
         {
-            return Singleton(() =>
+            using (var osw = new ObjectSafeWrapper(id, repo.Handle, throwIfMissing: throwIfMissing))
             {
-                using (var osw = new ObjectSafeWrapper(id, repo.Handle, throwIfMissing: throwIfMissing))
-                {
-                    return resultSelector(osw.ObjectPtr);
-                }
-            });
-        }
+                return resultSelector(osw.ObjectPtr);
+            }
+        });
     }
 }

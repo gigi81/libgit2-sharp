@@ -1,8 +1,7 @@
-﻿namespace LibGit2Sharp.Core
+﻿namespace LibGit2Sharp.Core;
+
+internal enum GitDirection
 {
-    internal enum GitDirection
-    {
-        Fetch = 0,
-        Push = 1
-    }
+    Fetch = 0,
+    Push = 1
 }

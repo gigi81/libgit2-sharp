@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct git_signature
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct git_signature
-    {
-        public char* name;
-        public char* email;
-        public git_time when;
-    }
+    public char* name;
+    public char* email;
+    public git_time when;
 }

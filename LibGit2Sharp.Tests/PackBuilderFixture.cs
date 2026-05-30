@@ -4,189 +4,188 @@ using System.Linq;
 using LibGit2Sharp.Tests.TestHelpers;
 using Xunit;
 
-namespace LibGit2Sharp.Tests
+namespace LibGit2Sharp.Tests;
+
+public class PackBuilderFixture : BaseFixture
 {
-    public class PackBuilderFixture : BaseFixture
+    [Fact]
+    public void TestDefaultPackDelegate()
     {
-        [Fact]
-        public void TestDefaultPackDelegate()
+        TestIfSameRepoAfterPacking(null);
+    }
+
+    [Fact]
+    public void TestCommitsPerBranchPackDelegate()
+    {
+        TestIfSameRepoAfterPacking(AddingObjectIdsTestDelegate);
+    }
+
+    [Fact]
+    public void TestCommitsPerBranchIdsPackDelegate()
+    {
+        TestIfSameRepoAfterPacking(AddingObjectsTestDelegate);
+    }
+
+    internal void TestIfSameRepoAfterPacking(Action<IRepository, PackBuilder> packDelegate)
+    {
+        // read a repo
+        // pack with the provided action
+        // write the pack file in a mirror repo
+        // read new repo
+        // compare
+
+        string orgRepoPath = SandboxPackBuilderTestRepo();
+        string mrrRepoPath = SandboxPackBuilderTestRepo();
+        string mrrRepoPackDirPath = Path.Combine(mrrRepoPath + "/.git/objects");
+
+        DirectoryHelper.DeleteDirectory(mrrRepoPackDirPath);
+        Directory.CreateDirectory(mrrRepoPackDirPath + "/pack");
+
+        PackBuilderOptions packBuilderOptions = new PackBuilderOptions(mrrRepoPackDirPath + "/pack");
+
+        using (Repository orgRepo = new Repository(orgRepoPath))
         {
-            TestIfSameRepoAfterPacking(null);
-        }
+            PackBuilderResults results;
+            if (packDelegate != null)
+                results = orgRepo.ObjectDatabase.Pack(packBuilderOptions, b => packDelegate(orgRepo, b));
+            else
+                results = orgRepo.ObjectDatabase.Pack(packBuilderOptions);
 
-        [Fact]
-        public void TestCommitsPerBranchPackDelegate()
-        {
-            TestIfSameRepoAfterPacking(AddingObjectIdsTestDelegate);
-        }
+            // written objects count is the same as in objects database
+            Assert.Equal(orgRepo.ObjectDatabase.Count(), results.WrittenObjectsCount);
 
-        [Fact]
-        public void TestCommitsPerBranchIdsPackDelegate()
-        {
-            TestIfSameRepoAfterPacking(AddingObjectsTestDelegate);
-        }
-
-        internal void TestIfSameRepoAfterPacking(Action<IRepository, PackBuilder> packDelegate)
-        {
-            // read a repo
-            // pack with the provided action
-            // write the pack file in a mirror repo
-            // read new repo
-            // compare
-
-            string orgRepoPath = SandboxPackBuilderTestRepo();
-            string mrrRepoPath = SandboxPackBuilderTestRepo();
-            string mrrRepoPackDirPath = Path.Combine(mrrRepoPath + "/.git/objects");
-
-            DirectoryHelper.DeleteDirectory(mrrRepoPackDirPath);
-            Directory.CreateDirectory(mrrRepoPackDirPath + "/pack");
-
-            PackBuilderOptions packBuilderOptions = new PackBuilderOptions(mrrRepoPackDirPath + "/pack");
-
-            using (Repository orgRepo = new Repository(orgRepoPath))
+            // loading a repo from the written pack file.
+            using (Repository mrrRepo = new Repository(mrrRepoPath))
             {
-                PackBuilderResults results;
-                if (packDelegate != null)
-                    results = orgRepo.ObjectDatabase.Pack(packBuilderOptions, b => packDelegate(orgRepo, b));
-                else
-                    results = orgRepo.ObjectDatabase.Pack(packBuilderOptions);
+                // make sure the objects of the original repo are the same as the ones in the mirror repo
+                // doing that by making sure the count is the same, and the set difference is empty
+                Assert.True(mrrRepo.ObjectDatabase.Count() == orgRepo.ObjectDatabase.Count() && !mrrRepo.ObjectDatabase.Except(orgRepo.ObjectDatabase).Any());
 
-                // written objects count is the same as in objects database
-                Assert.Equal(orgRepo.ObjectDatabase.Count(), results.WrittenObjectsCount);
+                Assert.Equal(orgRepo.Commits.Count(), mrrRepo.Commits.Count());
+                Assert.Equal(orgRepo.Branches.Count(), mrrRepo.Branches.Count());
+                Assert.Equal(orgRepo.Refs.Count(), mrrRepo.Refs.Count());
+            }
+        }
+    }
 
-                // loading a repo from the written pack file.
-                using (Repository mrrRepo = new Repository(mrrRepoPath))
-                {
-                    // make sure the objects of the original repo are the same as the ones in the mirror repo
-                    // doing that by making sure the count is the same, and the set difference is empty
-                    Assert.True(mrrRepo.ObjectDatabase.Count() == orgRepo.ObjectDatabase.Count() && !mrrRepo.ObjectDatabase.Except(orgRepo.ObjectDatabase).Any());
-
-                    Assert.Equal(orgRepo.Commits.Count(), mrrRepo.Commits.Count());
-                    Assert.Equal(orgRepo.Branches.Count(), mrrRepo.Branches.Count());
-                    Assert.Equal(orgRepo.Refs.Count(), mrrRepo.Refs.Count());
-                }
+    internal void AddingObjectIdsTestDelegate(IRepository repo, PackBuilder builder)
+    {
+        foreach (Branch branch in repo.Branches)
+        {
+            foreach (Commit commit in branch.Commits)
+            {
+                builder.AddRecursively(commit.Id);
             }
         }
 
-        internal void AddingObjectIdsTestDelegate(IRepository repo, PackBuilder builder)
+        foreach (Tag tag in repo.Tags)
         {
-            foreach (Branch branch in repo.Branches)
-            {
-                foreach (Commit commit in branch.Commits)
-                {
-                    builder.AddRecursively(commit.Id);
-                }
-            }
-
-            foreach (Tag tag in repo.Tags)
-            {
-                builder.Add(tag.Target.Id);
-            }
+            builder.Add(tag.Target.Id);
         }
+    }
 
-        internal void AddingObjectsTestDelegate(IRepository repo, PackBuilder builder)
+    internal void AddingObjectsTestDelegate(IRepository repo, PackBuilder builder)
+    {
+        foreach (Branch branch in repo.Branches)
         {
-            foreach (Branch branch in repo.Branches)
+            foreach (Commit commit in branch.Commits)
             {
-                foreach (Commit commit in branch.Commits)
-                {
-                    builder.AddRecursively(commit);
-                }
-            }
-
-            foreach (Tag tag in repo.Tags)
-            {
-                builder.Add(tag.Target);
+                builder.AddRecursively(commit);
             }
         }
 
-        [Fact]
-        public void ExceptionIfPathDoesNotExist()
+        foreach (Tag tag in repo.Tags)
         {
-            Assert.Throws<DirectoryNotFoundException>(() => new PackBuilderOptions("aaa"));
+            builder.Add(tag.Target);
         }
+    }
 
-        [Fact]
-        public void ExceptionIfPathEqualsNull()
+    [Fact]
+    public void ExceptionIfPathDoesNotExist()
+    {
+        Assert.Throws<DirectoryNotFoundException>(() => new PackBuilderOptions("aaa"));
+    }
+
+    [Fact]
+    public void ExceptionIfPathEqualsNull()
+    {
+        Assert.Throws<ArgumentNullException>(() => new PackBuilderOptions(null));
+    }
+
+    [Fact]
+    public void ExceptionIfOptionsEqualsNull()
+    {
+        string orgRepoPath = SandboxPackBuilderTestRepo();
+
+        using (Repository orgRepo = new Repository(orgRepoPath))
         {
-            Assert.Throws<ArgumentNullException>(() => new PackBuilderOptions(null));
-        }
-
-        [Fact]
-        public void ExceptionIfOptionsEqualsNull()
-        {
-            string orgRepoPath = SandboxPackBuilderTestRepo();
-
-            using (Repository orgRepo = new Repository(orgRepoPath))
+            Assert.Throws<ArgumentNullException>(() =>
             {
-                Assert.Throws<ArgumentNullException>(() =>
-                {
-                    orgRepo.ObjectDatabase.Pack(null);
-                });
-            }
-        }
-
-        [Fact]
-        public void ExceptionIfBuildDelegateEqualsNull()
-        {
-            string orgRepoPath = SandboxPackBuilderTestRepo();
-            PackBuilderOptions packBuilderOptions = new PackBuilderOptions(orgRepoPath);
-
-            using (Repository orgRepo = new Repository(orgRepoPath))
-            {
-                Assert.Throws<ArgumentNullException>(() =>
-                {
-                    orgRepo.ObjectDatabase.Pack(packBuilderOptions, null);
-                });
-            }
-        }
-
-        [Fact]
-        public void ExceptionIfNegativeNumberOfThreads()
-        {
-            string orgRepoPath = SandboxPackBuilderTestRepo();
-            PackBuilderOptions packBuilderOptions = new PackBuilderOptions(orgRepoPath);
-
-            Assert.Throws<ArgumentException>(() =>
-            {
-                packBuilderOptions.MaximumNumberOfThreads = -1;
+                orgRepo.ObjectDatabase.Pack(null);
             });
         }
+    }
 
-        [Fact]
-        public void ExceptionIfAddNullObjectID()
+    [Fact]
+    public void ExceptionIfBuildDelegateEqualsNull()
+    {
+        string orgRepoPath = SandboxPackBuilderTestRepo();
+        PackBuilderOptions packBuilderOptions = new PackBuilderOptions(orgRepoPath);
+
+        using (Repository orgRepo = new Repository(orgRepoPath))
         {
-            string orgRepoPath = SandboxPackBuilderTestRepo();
-            PackBuilderOptions packBuilderOptions = new PackBuilderOptions(orgRepoPath);
-
-            using (Repository orgRepo = new Repository(orgRepoPath))
+            Assert.Throws<ArgumentNullException>(() =>
             {
-                Assert.Throws<ArgumentNullException>(() =>
-                {
-                    orgRepo.ObjectDatabase.Pack(packBuilderOptions, builder =>
-                    {
-                        builder.Add(null);
-                    });
-                });
-            }
+                orgRepo.ObjectDatabase.Pack(packBuilderOptions, null);
+            });
         }
+    }
 
-        [Fact]
-        public void ExceptionIfAddRecursivelyNullObjectID()
+    [Fact]
+    public void ExceptionIfNegativeNumberOfThreads()
+    {
+        string orgRepoPath = SandboxPackBuilderTestRepo();
+        PackBuilderOptions packBuilderOptions = new PackBuilderOptions(orgRepoPath);
+
+        Assert.Throws<ArgumentException>(() =>
         {
-            string orgRepoPath = SandboxPackBuilderTestRepo();
-            PackBuilderOptions packBuilderOptions = new PackBuilderOptions(orgRepoPath);
+            packBuilderOptions.MaximumNumberOfThreads = -1;
+        });
+    }
 
-            using (Repository orgRepo = new Repository(orgRepoPath))
+    [Fact]
+    public void ExceptionIfAddNullObjectID()
+    {
+        string orgRepoPath = SandboxPackBuilderTestRepo();
+        PackBuilderOptions packBuilderOptions = new PackBuilderOptions(orgRepoPath);
+
+        using (Repository orgRepo = new Repository(orgRepoPath))
+        {
+            Assert.Throws<ArgumentNullException>(() =>
             {
-                Assert.Throws<ArgumentNullException>(() =>
+                orgRepo.ObjectDatabase.Pack(packBuilderOptions, builder =>
                 {
-                    orgRepo.ObjectDatabase.Pack(packBuilderOptions, builder =>
-                    {
-                        builder.AddRecursively(null);
-                    });
+                    builder.Add(null);
                 });
-            }
+            });
+        }
+    }
+
+    [Fact]
+    public void ExceptionIfAddRecursivelyNullObjectID()
+    {
+        string orgRepoPath = SandboxPackBuilderTestRepo();
+        PackBuilderOptions packBuilderOptions = new PackBuilderOptions(orgRepoPath);
+
+        using (Repository orgRepo = new Repository(orgRepoPath))
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                orgRepo.ObjectDatabase.Pack(packBuilderOptions, builder =>
+                {
+                    builder.AddRecursively(null);
+                });
+            });
         }
     }
 }

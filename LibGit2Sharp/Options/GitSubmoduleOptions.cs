@@ -1,16 +1,15 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct GitSubmoduleUpdateOptions
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct GitSubmoduleUpdateOptions
-    {
-        public uint Version;
+    public uint Version;
 
-        public GitCheckoutOptions CheckoutOptions;
+    public GitCheckoutOptions CheckoutOptions;
 
-        public GitFetchOptions FetchOptions;
+    public GitFetchOptions FetchOptions;
 
-        public int AllowFetch;
-    }
+    public int AllowFetch;
 }

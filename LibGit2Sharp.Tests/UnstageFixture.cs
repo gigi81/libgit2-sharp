@@ -4,310 +4,309 @@ using System.Linq;
 using LibGit2Sharp.Tests.TestHelpers;
 using Xunit;
 
-namespace LibGit2Sharp.Tests
+namespace LibGit2Sharp.Tests;
+
+public class UnstageFixture : BaseFixture
 {
-    public class UnstageFixture : BaseFixture
+
+    [Fact]
+    public void StagingANewVersionOfAFileThenUnstagingItRevertsTheBlobToTheVersionOfHead()
     {
-
-        [Fact]
-        public void StagingANewVersionOfAFileThenUnstagingItRevertsTheBlobToTheVersionOfHead()
+        string path = SandboxStandardTestRepo();
+        using (var repo = new Repository(path))
         {
-            string path = SandboxStandardTestRepo();
-            using (var repo = new Repository(path))
-            {
-                int count = repo.Index.Count;
+            int count = repo.Index.Count;
 
-                string filename = Path.Combine("1", "branch_file.txt");
-                const string posixifiedFileName = "1/branch_file.txt";
-                ObjectId blobId = repo.Index[posixifiedFileName].Id;
+            string filename = Path.Combine("1", "branch_file.txt");
+            const string posixifiedFileName = "1/branch_file.txt";
+            ObjectId blobId = repo.Index[posixifiedFileName].Id;
 
-                string fullpath = Path.Combine(repo.Info.WorkingDirectory, filename);
+            string fullpath = Path.Combine(repo.Info.WorkingDirectory, filename);
 
-                File.AppendAllText(fullpath, "Is there there anybody out there?");
-                Commands.Stage(repo, filename);
+            File.AppendAllText(fullpath, "Is there there anybody out there?");
+            Commands.Stage(repo, filename);
 
-                Assert.Equal(count, repo.Index.Count);
-                Assert.NotEqual((blobId), repo.Index[posixifiedFileName].Id);
+            Assert.Equal(count, repo.Index.Count);
+            Assert.NotEqual((blobId), repo.Index[posixifiedFileName].Id);
 
-                Commands.Unstage(repo, posixifiedFileName);
+            Commands.Unstage(repo, posixifiedFileName);
 
-                Assert.Equal(count, repo.Index.Count);
-                Assert.Equal(blobId, repo.Index[posixifiedFileName].Id);
-            }
+            Assert.Equal(count, repo.Index.Count);
+            Assert.Equal(blobId, repo.Index[posixifiedFileName].Id);
+        }
+    }
+
+    [Fact]
+    public void CanStageAndUnstageAnIgnoredFile()
+    {
+        string path = SandboxStandardTestRepo();
+        using (var repo = new Repository(path))
+        {
+            Touch(repo.Info.WorkingDirectory, ".gitignore", "*.ign" + Environment.NewLine);
+
+            const string relativePath = "Champa.ign";
+            Touch(repo.Info.WorkingDirectory, relativePath, "On stage!" + Environment.NewLine);
+
+            Assert.Equal(FileStatus.Ignored, repo.RetrieveStatus(relativePath));
+
+            Commands.Stage(repo, relativePath, new StageOptions { IncludeIgnored = true });
+            Assert.Equal(FileStatus.NewInIndex, repo.RetrieveStatus(relativePath));
+
+            Commands.Unstage(repo, relativePath);
+            Assert.Equal(FileStatus.Ignored, repo.RetrieveStatus(relativePath));
+        }
+    }
+
+    [Theory]
+    [InlineData("1/branch_file.txt", FileStatus.Unaltered, true, FileStatus.Unaltered, true, 0)]
+    [InlineData("deleted_unstaged_file.txt", FileStatus.DeletedFromWorkdir, true, FileStatus.DeletedFromWorkdir, true, 0)]
+    [InlineData("modified_unstaged_file.txt", FileStatus.ModifiedInWorkdir, true, FileStatus.ModifiedInWorkdir, true, 0)]
+    [InlineData("modified_staged_file.txt", FileStatus.ModifiedInIndex, true, FileStatus.ModifiedInWorkdir, true, 0)]
+    [InlineData("new_tracked_file.txt", FileStatus.NewInIndex, true, FileStatus.NewInWorkdir, false, -1)]
+    [InlineData("deleted_staged_file.txt", FileStatus.DeletedFromIndex, false, FileStatus.DeletedFromWorkdir, true, 1)]
+    public void CanUnstage(
+        string relativePath, FileStatus currentStatus, bool doesCurrentlyExistInTheIndex,
+        FileStatus expectedStatusOnceStaged, bool doesExistInTheIndexOnceStaged, int expectedIndexCountVariation)
+    {
+        string path = SandboxStandardTestRepo();
+        using (var repo = new Repository(path))
+        {
+            int count = repo.Index.Count;
+            Assert.Equal(doesCurrentlyExistInTheIndex, (repo.Index[relativePath] != null));
+            Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
+
+            Commands.Unstage(repo, relativePath);
+
+            Assert.Equal(count + expectedIndexCountVariation, repo.Index.Count);
+            Assert.Equal(doesExistInTheIndexOnceStaged, (repo.Index[relativePath] != null));
+            Assert.Equal(expectedStatusOnceStaged, repo.RetrieveStatus(relativePath));
+        }
+    }
+
+
+    [Theory]
+    [InlineData("modified_staged_file.txt", FileStatus.ModifiedInWorkdir)]
+    [InlineData("new_tracked_file.txt", FileStatus.NewInWorkdir)]
+    [InlineData("deleted_staged_file.txt", FileStatus.DeletedFromWorkdir)]
+    public void UnstagingWritesIndex(string relativePath, FileStatus expectedStatus)
+    {
+        string path = SandboxStandardTestRepo();
+        using (var repo = new Repository(path))
+        {
+            Commands.Unstage(repo, relativePath);
         }
 
-        [Fact]
-        public void CanStageAndUnstageAnIgnoredFile()
+        using (var repo = new Repository(path))
         {
-            string path = SandboxStandardTestRepo();
-            using (var repo = new Repository(path))
-            {
-                Touch(repo.Info.WorkingDirectory, ".gitignore", "*.ign" + Environment.NewLine);
-
-                const string relativePath = "Champa.ign";
-                Touch(repo.Info.WorkingDirectory, relativePath, "On stage!" + Environment.NewLine);
-
-                Assert.Equal(FileStatus.Ignored, repo.RetrieveStatus(relativePath));
-
-                Commands.Stage(repo, relativePath, new StageOptions { IncludeIgnored = true });
-                Assert.Equal(FileStatus.NewInIndex, repo.RetrieveStatus(relativePath));
-
-                Commands.Unstage(repo, relativePath);
-                Assert.Equal(FileStatus.Ignored, repo.RetrieveStatus(relativePath));
-            }
+            Assert.Equal(expectedStatus, repo.RetrieveStatus(relativePath));
         }
+    }
 
-        [Theory]
-        [InlineData("1/branch_file.txt", FileStatus.Unaltered, true, FileStatus.Unaltered, true, 0)]
-        [InlineData("deleted_unstaged_file.txt", FileStatus.DeletedFromWorkdir, true, FileStatus.DeletedFromWorkdir, true, 0)]
-        [InlineData("modified_unstaged_file.txt", FileStatus.ModifiedInWorkdir, true, FileStatus.ModifiedInWorkdir, true, 0)]
-        [InlineData("modified_staged_file.txt", FileStatus.ModifiedInIndex, true, FileStatus.ModifiedInWorkdir, true, 0)]
-        [InlineData("new_tracked_file.txt", FileStatus.NewInIndex, true, FileStatus.NewInWorkdir, false, -1)]
-        [InlineData("deleted_staged_file.txt", FileStatus.DeletedFromIndex, false, FileStatus.DeletedFromWorkdir, true, 1)]
-        public void CanUnstage(
-            string relativePath, FileStatus currentStatus, bool doesCurrentlyExistInTheIndex,
-            FileStatus expectedStatusOnceStaged, bool doesExistInTheIndexOnceStaged, int expectedIndexCountVariation)
+    [Theory]
+    [InlineData("new_untracked_file.txt", FileStatus.NewInWorkdir)]
+    [InlineData("where-am-I.txt", FileStatus.Nonexistent)]
+    public void UnstagingUnknownPathsWithStrictUnmatchedExplicitPathsValidationThrows(string relativePath, FileStatus currentStatus)
+    {
+        using (var repo = new Repository(SandboxStandardTestRepo()))
         {
-            string path = SandboxStandardTestRepo();
-            using (var repo = new Repository(path))
-            {
-                int count = repo.Index.Count;
-                Assert.Equal(doesCurrentlyExistInTheIndex, (repo.Index[relativePath] != null));
-                Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
+            Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
 
-                Commands.Unstage(repo, relativePath);
-
-                Assert.Equal(count + expectedIndexCountVariation, repo.Index.Count);
-                Assert.Equal(doesExistInTheIndexOnceStaged, (repo.Index[relativePath] != null));
-                Assert.Equal(expectedStatusOnceStaged, repo.RetrieveStatus(relativePath));
-            }
+            Assert.Throws<UnmatchedPathException>(() => Commands.Unstage(repo, relativePath, new ExplicitPathsOptions()));
         }
+    }
 
-
-        [Theory]
-        [InlineData("modified_staged_file.txt", FileStatus.ModifiedInWorkdir)]
-        [InlineData("new_tracked_file.txt", FileStatus.NewInWorkdir)]
-        [InlineData("deleted_staged_file.txt", FileStatus.DeletedFromWorkdir)]
-        public void UnstagingWritesIndex(string relativePath, FileStatus expectedStatus)
+    [Theory]
+    [InlineData("new_untracked_file.txt", FileStatus.NewInWorkdir)]
+    [InlineData("where-am-I.txt", FileStatus.Nonexistent)]
+    public void CanUnstageUnknownPathsWithLaxUnmatchedExplicitPathsValidation(string relativePath, FileStatus currentStatus)
+    {
+        using (var repo = new Repository(SandboxStandardTestRepo()))
         {
-            string path = SandboxStandardTestRepo();
-            using (var repo = new Repository(path))
-            {
-                Commands.Unstage(repo, relativePath);
-            }
+            Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
 
-            using (var repo = new Repository(path))
-            {
-                Assert.Equal(expectedStatus, repo.RetrieveStatus(relativePath));
-            }
+            Commands.Unstage(repo, relativePath, new ExplicitPathsOptions() { ShouldFailOnUnmatchedPath = false });
+
+            Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
         }
+    }
 
-        [Theory]
-        [InlineData("new_untracked_file.txt", FileStatus.NewInWorkdir)]
-        [InlineData("where-am-I.txt", FileStatus.Nonexistent)]
-        public void UnstagingUnknownPathsWithStrictUnmatchedExplicitPathsValidationThrows(string relativePath, FileStatus currentStatus)
+    [Fact]
+    public void CanUnstageTheRemovalOfAFile()
+    {
+        string path = SandboxStandardTestRepo();
+        using (var repo = new Repository(path))
         {
-            using (var repo = new Repository(SandboxStandardTestRepo()))
-            {
-                Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
+            int count = repo.Index.Count;
 
-                Assert.Throws<UnmatchedPathException>(() => Commands.Unstage(repo, relativePath, new ExplicitPathsOptions()));
-            }
+            const string filename = "deleted_staged_file.txt";
+
+            string fullPath = Path.Combine(repo.Info.WorkingDirectory, filename);
+            Assert.False(File.Exists(fullPath));
+
+            Assert.Equal(FileStatus.DeletedFromIndex, repo.RetrieveStatus(filename));
+
+            Commands.Unstage(repo, filename);
+            Assert.Equal(count + 1, repo.Index.Count);
+
+            Assert.Equal(FileStatus.DeletedFromWorkdir, repo.RetrieveStatus(filename));
         }
+    }
 
-        [Theory]
-        [InlineData("new_untracked_file.txt", FileStatus.NewInWorkdir)]
-        [InlineData("where-am-I.txt", FileStatus.Nonexistent)]
-        public void CanUnstageUnknownPathsWithLaxUnmatchedExplicitPathsValidation(string relativePath, FileStatus currentStatus)
+    [Fact]
+    public void CanUnstageUntrackedFileAgainstAnOrphanedHead()
+    {
+        string repoPath = InitNewRepository();
+
+        using (var repo = new Repository(repoPath))
         {
-            using (var repo = new Repository(SandboxStandardTestRepo()))
-            {
-                Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
+            const string relativePath = "a.txt";
+            Touch(repo.Info.WorkingDirectory, relativePath, "hello test file\n");
 
-                Commands.Unstage(repo, relativePath, new ExplicitPathsOptions() { ShouldFailOnUnmatchedPath = false });
+            Commands.Stage(repo, relativePath);
 
-                Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
-            }
+            Commands.Unstage(repo, relativePath);
+            RepositoryStatus status = repo.RetrieveStatus();
+            Assert.Empty(status.Staged);
+            Assert.Single(status.Untracked);
+
+            Assert.Throws<UnmatchedPathException>(() => Commands.Unstage(repo, "i-dont-exist", new ExplicitPathsOptions()));
         }
+    }
 
-        [Fact]
-        public void CanUnstageTheRemovalOfAFile()
+    [Theory]
+    [InlineData("new_untracked_file.txt", FileStatus.NewInWorkdir)]
+    [InlineData("where-am-I.txt", FileStatus.Nonexistent)]
+    public void UnstagingUnknownPathsAgainstAnOrphanedHeadWithStrictUnmatchedExplicitPathsValidationThrows(string relativePath, FileStatus currentStatus)
+    {
+        using (var repo = new Repository(SandboxStandardTestRepo()))
         {
-            string path = SandboxStandardTestRepo();
-            using (var repo = new Repository(path))
-            {
-                int count = repo.Index.Count;
+            repo.Refs.UpdateTarget("HEAD", "refs/heads/orphaned");
+            Assert.True(repo.Info.IsHeadUnborn);
 
-                const string filename = "deleted_staged_file.txt";
+            Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
 
-                string fullPath = Path.Combine(repo.Info.WorkingDirectory, filename);
-                Assert.False(File.Exists(fullPath));
-
-                Assert.Equal(FileStatus.DeletedFromIndex, repo.RetrieveStatus(filename));
-
-                Commands.Unstage(repo, filename);
-                Assert.Equal(count + 1, repo.Index.Count);
-
-                Assert.Equal(FileStatus.DeletedFromWorkdir, repo.RetrieveStatus(filename));
-            }
+            Assert.Throws<UnmatchedPathException>(() => Commands.Unstage(repo, relativePath, new ExplicitPathsOptions()));
         }
+    }
 
-        [Fact]
-        public void CanUnstageUntrackedFileAgainstAnOrphanedHead()
+    [Theory]
+    [InlineData("new_untracked_file.txt", FileStatus.NewInWorkdir)]
+    [InlineData("where-am-I.txt", FileStatus.Nonexistent)]
+    public void CanUnstageUnknownPathsAgainstAnOrphanedHeadWithLaxUnmatchedExplicitPathsValidation(string relativePath, FileStatus currentStatus)
+    {
+        using (var repo = new Repository(SandboxStandardTestRepo()))
         {
-            string repoPath = InitNewRepository();
+            repo.Refs.UpdateTarget("HEAD", "refs/heads/orphaned");
+            Assert.True(repo.Info.IsHeadUnborn);
 
-            using (var repo = new Repository(repoPath))
-            {
-                const string relativePath = "a.txt";
-                Touch(repo.Info.WorkingDirectory, relativePath, "hello test file\n");
+            Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
 
-                Commands.Stage(repo, relativePath);
+            Commands.Unstage(repo, relativePath);
+            Commands.Unstage(repo, relativePath, new ExplicitPathsOptions { ShouldFailOnUnmatchedPath = false });
 
-                Commands.Unstage(repo, relativePath);
-                RepositoryStatus status = repo.RetrieveStatus();
-                Assert.Empty(status.Staged);
-                Assert.Single(status.Untracked);
-
-                Assert.Throws<UnmatchedPathException>(() => Commands.Unstage(repo, "i-dont-exist", new ExplicitPathsOptions()));
-            }
+            Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
         }
+    }
 
-        [Theory]
-        [InlineData("new_untracked_file.txt", FileStatus.NewInWorkdir)]
-        [InlineData("where-am-I.txt", FileStatus.Nonexistent)]
-        public void UnstagingUnknownPathsAgainstAnOrphanedHeadWithStrictUnmatchedExplicitPathsValidationThrows(string relativePath, FileStatus currentStatus)
+    [Fact]
+    public void UnstagingANewFileWithAFullPathWhichEscapesOutOfTheWorkingDirThrows()
+    {
+        SelfCleaningDirectory scd = BuildSelfCleaningDirectory();
+        string path = SandboxStandardTestRepo();
+        using (var repo = new Repository(path))
         {
-            using (var repo = new Repository(SandboxStandardTestRepo()))
-            {
-                repo.Refs.UpdateTarget("HEAD", "refs/heads/orphaned");
-                Assert.True(repo.Info.IsHeadUnborn);
+            DirectoryInfo di = Directory.CreateDirectory(scd.DirectoryPath);
 
-                Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
+            const string filename = "unit_test.txt";
+            string fullPath = Touch(di.FullName, filename, "some contents");
 
-                Assert.Throws<UnmatchedPathException>(() => Commands.Unstage(repo, relativePath, new ExplicitPathsOptions()));
-            }
+            Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, fullPath));
         }
+    }
 
-        [Theory]
-        [InlineData("new_untracked_file.txt", FileStatus.NewInWorkdir)]
-        [InlineData("where-am-I.txt", FileStatus.Nonexistent)]
-        public void CanUnstageUnknownPathsAgainstAnOrphanedHeadWithLaxUnmatchedExplicitPathsValidation(string relativePath, FileStatus currentStatus)
+    [Fact]
+    public void UnstagingANewFileWithAFullPathWhichEscapesOutOfTheWorkingDirAgainstAnOrphanedHeadThrows()
+    {
+        SelfCleaningDirectory scd = BuildSelfCleaningDirectory();
+
+        string repoPath = InitNewRepository();
+
+        using (var repo = new Repository(repoPath))
         {
-            using (var repo = new Repository(SandboxStandardTestRepo()))
-            {
-                repo.Refs.UpdateTarget("HEAD", "refs/heads/orphaned");
-                Assert.True(repo.Info.IsHeadUnborn);
+            DirectoryInfo di = Directory.CreateDirectory(scd.DirectoryPath);
 
-                Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
+            const string filename = "unit_test.txt";
+            string fullPath = Touch(di.FullName, filename, "some contents");
 
-                Commands.Unstage(repo, relativePath);
-                Commands.Unstage(repo, relativePath, new ExplicitPathsOptions { ShouldFailOnUnmatchedPath = false });
-
-                Assert.Equal(currentStatus, repo.RetrieveStatus(relativePath));
-            }
+            Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, fullPath));
         }
+    }
 
-        [Fact]
-        public void UnstagingANewFileWithAFullPathWhichEscapesOutOfTheWorkingDirThrows()
+    [Fact]
+    public void UnstagingFileWithBadParamsThrows()
+    {
+        var path = SandboxStandardTestRepoGitDir();
+        using (var repo = new Repository(path))
         {
-            SelfCleaningDirectory scd = BuildSelfCleaningDirectory();
-            string path = SandboxStandardTestRepo();
-            using (var repo = new Repository(path))
-            {
-                DirectoryInfo di = Directory.CreateDirectory(scd.DirectoryPath);
-
-                const string filename = "unit_test.txt";
-                string fullPath = Touch(di.FullName, filename, "some contents");
-
-                Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, fullPath));
-            }
+            Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, string.Empty));
+            Assert.Throws<ArgumentNullException>(() => Commands.Unstage(repo, (string)null));
+            Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, Array.Empty<string>()));
+            Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, new string[] { null }));
         }
+    }
 
-        [Fact]
-        public void UnstagingANewFileWithAFullPathWhichEscapesOutOfTheWorkingDirAgainstAnOrphanedHeadThrows()
+    [Fact]
+    public void CanUnstageSourceOfARename()
+    {
+        using (var repo = new Repository(SandboxStandardTestRepo()))
         {
-            SelfCleaningDirectory scd = BuildSelfCleaningDirectory();
+            Commands.Move(repo, "branch_file.txt", "renamed_branch_file.txt");
 
-            string repoPath = InitNewRepository();
+            RepositoryStatus oldStatus = repo.RetrieveStatus();
+            Assert.Single(oldStatus.RenamedInIndex);
+            Assert.Equal(FileStatus.Nonexistent, oldStatus["branch_file.txt"].State);
+            Assert.Equal(FileStatus.RenamedInIndex, oldStatus["renamed_branch_file.txt"].State);
 
-            using (var repo = new Repository(repoPath))
-            {
-                DirectoryInfo di = Directory.CreateDirectory(scd.DirectoryPath);
+            Commands.Unstage(repo, new string[] { "branch_file.txt" });
 
-                const string filename = "unit_test.txt";
-                string fullPath = Touch(di.FullName, filename, "some contents");
-
-                Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, fullPath));
-            }
+            RepositoryStatus newStatus = repo.RetrieveStatus();
+            Assert.Empty(newStatus.RenamedInIndex);
+            Assert.Equal(FileStatus.DeletedFromWorkdir, newStatus["branch_file.txt"].State);
+            Assert.Equal(FileStatus.NewInIndex, newStatus["renamed_branch_file.txt"].State);
         }
+    }
 
-        [Fact]
-        public void UnstagingFileWithBadParamsThrows()
+    [Fact]
+    public void CanUnstageTargetOfARename()
+    {
+        using (var repo = new Repository(SandboxStandardTestRepo()))
         {
-            var path = SandboxStandardTestRepoGitDir();
-            using (var repo = new Repository(path))
-            {
-                Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, string.Empty));
-                Assert.Throws<ArgumentNullException>(() => Commands.Unstage(repo, (string)null));
-                Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, Array.Empty<string>()));
-                Assert.Throws<ArgumentException>(() => Commands.Unstage(repo, new string[] { null }));
-            }
+            Commands.Move(repo, "branch_file.txt", "renamed_branch_file.txt");
+
+            RepositoryStatus oldStatus = repo.RetrieveStatus();
+            Assert.Single(oldStatus.RenamedInIndex);
+            Assert.Equal(FileStatus.RenamedInIndex, oldStatus["renamed_branch_file.txt"].State);
+
+            Commands.Unstage(repo, new string[] { "renamed_branch_file.txt" });
+
+            RepositoryStatus newStatus = repo.RetrieveStatus();
+            Assert.Empty(newStatus.RenamedInIndex);
+            Assert.Equal(FileStatus.NewInWorkdir, newStatus["renamed_branch_file.txt"].State);
+            Assert.Equal(FileStatus.DeletedFromIndex, newStatus["branch_file.txt"].State);
         }
+    }
 
-        [Fact]
-        public void CanUnstageSourceOfARename()
+    [Fact]
+    public void CanUnstageBothSidesOfARename()
+    {
+        using (var repo = new Repository(SandboxStandardTestRepo()))
         {
-            using (var repo = new Repository(SandboxStandardTestRepo()))
-            {
-                Commands.Move(repo, "branch_file.txt", "renamed_branch_file.txt");
+            Commands.Move(repo, "branch_file.txt", "renamed_branch_file.txt");
+            Commands.Unstage(repo, new string[] { "branch_file.txt", "renamed_branch_file.txt" });
 
-                RepositoryStatus oldStatus = repo.RetrieveStatus();
-                Assert.Single(oldStatus.RenamedInIndex);
-                Assert.Equal(FileStatus.Nonexistent, oldStatus["branch_file.txt"].State);
-                Assert.Equal(FileStatus.RenamedInIndex, oldStatus["renamed_branch_file.txt"].State);
-
-                Commands.Unstage(repo, new string[] { "branch_file.txt" });
-
-                RepositoryStatus newStatus = repo.RetrieveStatus();
-                Assert.Empty(newStatus.RenamedInIndex);
-                Assert.Equal(FileStatus.DeletedFromWorkdir, newStatus["branch_file.txt"].State);
-                Assert.Equal(FileStatus.NewInIndex, newStatus["renamed_branch_file.txt"].State);
-            }
-        }
-
-        [Fact]
-        public void CanUnstageTargetOfARename()
-        {
-            using (var repo = new Repository(SandboxStandardTestRepo()))
-            {
-                Commands.Move(repo, "branch_file.txt", "renamed_branch_file.txt");
-
-                RepositoryStatus oldStatus = repo.RetrieveStatus();
-                Assert.Single(oldStatus.RenamedInIndex);
-                Assert.Equal(FileStatus.RenamedInIndex, oldStatus["renamed_branch_file.txt"].State);
-
-                Commands.Unstage(repo, new string[] { "renamed_branch_file.txt" });
-
-                RepositoryStatus newStatus = repo.RetrieveStatus();
-                Assert.Empty(newStatus.RenamedInIndex);
-                Assert.Equal(FileStatus.NewInWorkdir, newStatus["renamed_branch_file.txt"].State);
-                Assert.Equal(FileStatus.DeletedFromIndex, newStatus["branch_file.txt"].State);
-            }
-        }
-
-        [Fact]
-        public void CanUnstageBothSidesOfARename()
-        {
-            using (var repo = new Repository(SandboxStandardTestRepo()))
-            {
-                Commands.Move(repo, "branch_file.txt", "renamed_branch_file.txt");
-                Commands.Unstage(repo, new string[] { "branch_file.txt", "renamed_branch_file.txt" });
-
-                RepositoryStatus status = repo.RetrieveStatus();
-                Assert.Equal(FileStatus.DeletedFromWorkdir, status["branch_file.txt"].State);
-                Assert.Equal(FileStatus.NewInWorkdir, status["renamed_branch_file.txt"].State);
-            }
+            RepositoryStatus status = repo.RetrieveStatus();
+            Assert.Equal(FileStatus.DeletedFromWorkdir, status["branch_file.txt"].State);
+            Assert.Equal(FileStatus.NewInWorkdir, status["renamed_branch_file.txt"].State);
         }
     }
 }

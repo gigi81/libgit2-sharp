@@ -1,78 +1,77 @@
 ﻿using System;
 using System.IO;
 
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+internal class FilePath : IEquatable<FilePath>
 {
-    internal class FilePath : IEquatable<FilePath>
+    internal static FilePath Empty = new FilePath(string.Empty);
+
+    private const char posixDirectorySeparatorChar = '/';
+
+    private readonly string native;
+    private readonly string posix;
+
+    private FilePath(string path)
     {
-        internal static FilePath Empty = new FilePath(string.Empty);
+        native = Replace(path, posixDirectorySeparatorChar, Path.DirectorySeparatorChar);
+        posix = Replace(path, Path.DirectorySeparatorChar, posixDirectorySeparatorChar);
+    }
 
-        private const char posixDirectorySeparatorChar = '/';
+    public string Native
+    {
+        get { return native; }
+    }
 
-        private readonly string native;
-        private readonly string posix;
+    public string Posix
+    {
+        get { return posix; }
+    }
 
-        private FilePath(string path)
+    public override string ToString()
+    {
+        return Native;
+    }
+
+    public static implicit operator FilePath(string path)
+    {
+        switch (path)
         {
-            native = Replace(path, posixDirectorySeparatorChar, Path.DirectorySeparatorChar);
-            posix = Replace(path, Path.DirectorySeparatorChar, posixDirectorySeparatorChar);
+            case null:
+                return null;
+
+            case "":
+                return Empty;
+
+            default:
+                return new FilePath(path);
+        }
+    }
+
+    private static string Replace(string path, char oldChar, char newChar)
+    {
+        if (oldChar == newChar)
+        {
+            return path;
         }
 
-        public string Native
-        {
-            get { return native; }
-        }
+        return path == null ? null : path.Replace(oldChar, newChar);
+    }
 
-        public string Posix
-        {
-            get { return posix; }
-        }
+    public bool Equals(FilePath other)
+    {
+        return other == null
+            ? posix == null
+            : string.Equals(posix, other.posix, StringComparison.Ordinal);
+    }
 
-        public override string ToString()
-        {
-            return Native;
-        }
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as FilePath);
+    }
 
-        public static implicit operator FilePath(string path)
-        {
-            switch (path)
-            {
-                case null:
-                    return null;
-
-                case "":
-                    return Empty;
-
-                default:
-                    return new FilePath(path);
-            }
-        }
-
-        private static string Replace(string path, char oldChar, char newChar)
-        {
-            if (oldChar == newChar)
-            {
-                return path;
-            }
-
-            return path == null ? null : path.Replace(oldChar, newChar);
-        }
-
-        public bool Equals(FilePath other)
-        {
-            return other == null
-                ? posix == null
-                : string.Equals(posix, other.posix, StringComparison.Ordinal);
-        }
-
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as FilePath);
-        }
-
-        public override int GetHashCode()
-        {
-            return posix == null ? 0 : posix.GetHashCode();
-        }
+    public override int GetHashCode()
+    {
+        return posix == null ? 0 : posix.GetHashCode();
     }
 }

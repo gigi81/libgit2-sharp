@@ -1,36 +1,35 @@
 ﻿using System.Globalization;
 
-namespace LibGit2Sharp
+namespace LibGit2Sharp;
+
+/// <summary>
+/// A merge head is a parent for the next commit.
+/// </summary>
+internal class MergeHead : ReferenceWrapper<Commit>
 {
     /// <summary>
-    /// A merge head is a parent for the next commit.
+    /// Needed for mocking purposes.
     /// </summary>
-    internal class MergeHead : ReferenceWrapper<Commit>
+    protected MergeHead()
+    { }
+
+    internal MergeHead(Repository repo, ObjectId targetId, int index)
+        : base(repo, new DirectReference(string.Format(CultureInfo.InvariantCulture, "MERGE_HEAD[{0}]", index), repo, targetId), r => r.CanonicalName)
+    { }
+
+    /// <summary>
+    /// Gets the <see cref="Commit"/> that this merge head points to.
+    /// </summary>
+    public virtual Commit Tip
     {
-        /// <summary>
-        /// Needed for mocking purposes.
-        /// </summary>
-        protected MergeHead()
-        { }
+        get { return TargetObject; }
+    }
 
-        internal MergeHead(Repository repo, ObjectId targetId, int index)
-            : base(repo, new DirectReference(string.Format(CultureInfo.InvariantCulture, "MERGE_HEAD[{0}]", index), repo, targetId), r => r.CanonicalName)
-        { }
-
-        /// <summary>
-        /// Gets the <see cref="Commit"/> that this merge head points to.
-        /// </summary>
-        public virtual Commit Tip
-        {
-            get { return TargetObject; }
-        }
-
-        /// <summary>
-        /// Returns "MERGE_HEAD[i]", where i is the index of this merge head.
-        /// </summary>
-        protected override string Shorten()
-        {
-            return CanonicalName;
-        }
+    /// <summary>
+    /// Returns "MERGE_HEAD[i]", where i is the index of this merge head.
+    /// </summary>
+    protected override string Shorten()
+    {
+        return CanonicalName;
     }
 }

@@ -2,54 +2,53 @@
 using LibGit2Sharp.Tests.TestHelpers;
 using Xunit;
 
-namespace LibGit2Sharp.Tests
+namespace LibGit2Sharp.Tests;
+
+public class AttributesFixture : BaseFixture
 {
-    public class AttributesFixture : BaseFixture
+    [Fact]
+    public void StagingHonorsTheAttributesFiles()
     {
-        [Fact]
-        public void StagingHonorsTheAttributesFiles()
+        using (var repo = new Repository(InitNewRepository()))
         {
-            using (var repo = new Repository(InitNewRepository()))
-            {
-                CreateAttributesFile(repo);
+            CreateAttributesFile(repo);
 
-                AssertNormalization(repo, "text.txt", true, "22c74203bace3c2e950278c7ab08da0fca9f4e9b");
-                AssertNormalization(repo, "huh.dunno", true, "22c74203bace3c2e950278c7ab08da0fca9f4e9b");
-                AssertNormalization(repo, "binary.data", false, "66eeff1fcbacf589e6d70aa70edd3fce5be2b37c");
-            }
+            AssertNormalization(repo, "text.txt", true, "22c74203bace3c2e950278c7ab08da0fca9f4e9b");
+            AssertNormalization(repo, "huh.dunno", true, "22c74203bace3c2e950278c7ab08da0fca9f4e9b");
+            AssertNormalization(repo, "binary.data", false, "66eeff1fcbacf589e6d70aa70edd3fce5be2b37c");
         }
+    }
 
-        private static void AssertNormalization(IRepository repo, string filename, bool shouldHaveBeenNormalized, string expectedSha)
-        {
-            var sb = new StringBuilder();
-            sb.Append("I'm going to be dynamically processed\r\n");
-            sb.Append("And my line endings...\r\n");
-            sb.Append("...are going to be\n");
-            sb.Append("normalized!\r\n");
+    private static void AssertNormalization(IRepository repo, string filename, bool shouldHaveBeenNormalized, string expectedSha)
+    {
+        var sb = new StringBuilder();
+        sb.Append("I'm going to be dynamically processed\r\n");
+        sb.Append("And my line endings...\r\n");
+        sb.Append("...are going to be\n");
+        sb.Append("normalized!\r\n");
 
-            Touch(repo.Info.WorkingDirectory, filename, sb.ToString());
+        Touch(repo.Info.WorkingDirectory, filename, sb.ToString());
 
-            Commands.Stage(repo, filename);
+        Commands.Stage(repo, filename);
 
-            IndexEntry entry = repo.Index[filename];
-            Assert.NotNull(entry);
+        IndexEntry entry = repo.Index[filename];
+        Assert.NotNull(entry);
 
-            Assert.Equal(expectedSha, entry.Id.Sha);
+        Assert.Equal(expectedSha, entry.Id.Sha);
 
-            var blob = repo.Lookup<Blob>(entry.Id);
-            Assert.NotNull(blob);
+        var blob = repo.Lookup<Blob>(entry.Id);
+        Assert.NotNull(blob);
 
-            Assert.Equal(!shouldHaveBeenNormalized, blob.GetContentText().Contains("\r"));
-        }
+        Assert.Equal(!shouldHaveBeenNormalized, blob.GetContentText().Contains("\r"));
+    }
 
-        private static void CreateAttributesFile(IRepository repo)
-        {
-            var sb = new StringBuilder();
-            sb.Append("* text=auto\n");
-            sb.Append("*.txt text\n");
-            sb.Append("*.data binary\n");
+    private static void CreateAttributesFile(IRepository repo)
+    {
+        var sb = new StringBuilder();
+        sb.Append("* text=auto\n");
+        sb.Append("*.txt text\n");
+        sb.Append("*.data binary\n");
 
-            Touch(repo.Info.WorkingDirectory, ".gitattributes", sb.ToString());
-        }
+        Touch(repo.Info.WorkingDirectory, ".gitattributes", sb.ToString());
     }
 }

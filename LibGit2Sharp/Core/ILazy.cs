@@ -1,7 +1,6 @@
-namespace LibGit2Sharp.Core
+namespace LibGit2Sharp.Core;
+
+internal interface ILazy<T>
 {
-    internal interface ILazy<T>
-    {
-        T Value { get; }
-    }
+    T Value { get; }
 }
