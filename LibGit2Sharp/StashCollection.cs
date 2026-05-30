@@ -91,6 +91,7 @@ namespace LibGit2Sharp
         {
             return Add(stasher, null, StashModifiers.Default);
         }
+
         /// <summary>
         /// Creates a stash with the specified message.
         /// </summary>
@@ -149,26 +150,21 @@ namespace LibGit2Sharp
                 throw new ArgumentException("The passed index must be a positive integer.", nameof(index));
             }
 
-            if (options == null)
+            options ??= new StashApplyOptions();
+
+            using var checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options.CheckoutOptions ?? new CheckoutOptions());
+            var stashApplyOptions = new GitStashApplyOptions
             {
-                options = new StashApplyOptions();
+                CheckoutOptions = checkoutOptionsWrapper.Options,
+                Flags = options.ApplyModifiers,
+            };
+
+            if (options.ProgressHandler != null)
+            {
+                stashApplyOptions.ApplyProgressCallback = (progress, _) => options.ProgressHandler(progress) ? 0 : -1;
             }
 
-            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options.CheckoutOptions ?? new CheckoutOptions()))
-            {
-                var opts = new GitStashApplyOptions
-                {
-                    CheckoutOptions = checkoutOptionsWrapper.Options,
-                    Flags = options.ApplyModifiers,
-                };
-
-                if (options.ProgressHandler != null)
-                {
-                    opts.ApplyProgressCallback = (progress, payload) => options.ProgressHandler(progress) ? 0 : -1;
-                }
-
-                return Proxy.git_stash_apply(repo.Handle, index, opts);
-            }
+            return Proxy.git_stash_apply(repo.Handle, index, stashApplyOptions);
         }
 
         /// <summary>
