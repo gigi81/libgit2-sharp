@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace LibGit2Sharp.Core
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct GitMergeOpts
+    internal struct GitMergeOptions
     {
         public uint Version;
 

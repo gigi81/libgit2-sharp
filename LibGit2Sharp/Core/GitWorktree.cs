@@ -38,7 +38,7 @@ namespace LibGit2Sharp.Core
 
         public IntPtr @ref = IntPtr.Zero;
 
-        public GitCheckoutOpts checkoutOpts = new GitCheckoutOpts
+        public GitCheckoutOptions CheckoutOptions = new GitCheckoutOptions
         {
             version = 1,
             checkout_strategy = CheckoutStrategy.GIT_CHECKOUT_SAFE

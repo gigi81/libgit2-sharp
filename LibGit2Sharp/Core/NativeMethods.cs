@@ -365,13 +365,13 @@ namespace LibGit2Sharp.Core
         internal static extern unsafe int git_checkout_tree(
             git_repository* repo,
             git_object* treeish,
-            ref GitCheckoutOpts opts);
+            ref GitCheckoutOptions options);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_checkout_index(
             git_repository* repo,
             git_object* treeish,
-            ref GitCheckoutOpts opts);
+            ref GitCheckoutOptions options);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_clone(
@@ -987,8 +987,8 @@ namespace LibGit2Sharp.Core
             git_repository* repo,
             [In] IntPtr[] their_heads,
             UIntPtr their_heads_len,
-            ref GitMergeOpts merge_opts,
-            ref GitCheckoutOpts checkout_opts);
+            ref GitMergeOptions mergeOptions,
+            ref GitCheckoutOptions checkoutOptions);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_merge_commits(
@@ -996,7 +996,7 @@ namespace LibGit2Sharp.Core
             git_repository* repo,
             git_object* our_commit,
             git_object* their_commit,
-            ref GitMergeOpts merge_opts);
+            ref GitMergeOptions mergeOptions);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_merge_analysis(
@@ -1413,7 +1413,7 @@ namespace LibGit2Sharp.Core
         internal static extern unsafe int git_remote_fetch(
             git_remote* remote,
             ref GitStrArray refspecs,
-            GitFetchOptions fetch_opts,
+            ref GitFetchOptions fetch_opts,
             [MarshalAs(UnmanagedType.CustomMarshaler, MarshalCookie = UniqueId.UniqueIdentifier, MarshalTypeRef = typeof(StrictUtf8Marshaler))] string log_message);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
@@ -1432,7 +1432,7 @@ namespace LibGit2Sharp.Core
         internal static extern unsafe int git_remote_push(
             git_remote* remote,
             ref GitStrArray refSpecs,
-            GitPushOptions opts);
+            ref GitPushOptions opts);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe UIntPtr git_remote_refspec_count(git_remote* remote);
@@ -1669,13 +1669,13 @@ namespace LibGit2Sharp.Core
             git_repository* repo,
             git_object* target,
             ResetMode reset_type,
-            ref GitCheckoutOpts opts);
+            ref GitCheckoutOptions options);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_revert(
             git_repository* repo,
             git_object* commit,
-            GitRevertOpts opts);
+            GitRevertOptions options);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_revert_commit(
@@ -1684,7 +1684,7 @@ namespace LibGit2Sharp.Core
             git_object* revert_commit,
             git_object* our_commit,
             uint mainline,
-            ref GitMergeOpts opts);
+            ref GitMergeOptions options);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_revparse_ext(
@@ -1765,13 +1765,13 @@ namespace LibGit2Sharp.Core
         internal static extern unsafe int git_stash_apply(
             git_repository* repo,
             UIntPtr index,
-            GitStashApplyOpts opts);
+            GitStashApplyOptions options);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_stash_pop(
             git_repository* repo,
             UIntPtr index,
-            GitStashApplyOpts opts);
+            GitStashApplyOptions options);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern unsafe int git_status_file(
@@ -2057,7 +2057,7 @@ namespace LibGit2Sharp.Core
             git_object* cherrypick_commit,
             git_object* our_commit,
             uint mainline,
-            ref GitMergeOpts options);
+            ref GitMergeOptions options);
 
         [DllImport(libgit2, CallingConvention = CallingConvention.Cdecl)]
         internal static extern int git_transaction_commit(IntPtr txn);

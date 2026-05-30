@@ -99,7 +99,7 @@ namespace LibGit2Sharp
                     this.repository.Refs.RetrieveReferencePtr(b.CanonicalName);
             };
 
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options))
             {
                 GitRebaseOptions gitRebaseOptions = new GitRebaseOptions()
                 {
@@ -141,7 +141,7 @@ namespace LibGit2Sharp
 
             EnsureNonBareRepo();
 
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options))
             {
                 GitRebaseOptions gitRebaseOptions = new GitRebaseOptions()
                 {
@@ -205,7 +205,7 @@ namespace LibGit2Sharp
 
             EnsureNonBareRepo();
 
-            using (GitCheckoutOptsWrapper checkoutOptionsWrapper = new GitCheckoutOptsWrapper(options))
+            using (GitCheckoutOptionsWrapper checkoutOptionsWrapper = new GitCheckoutOptionsWrapper(options))
             {
                 GitRebaseOptions gitRebaseOptions = new GitRebaseOptions()
                 {

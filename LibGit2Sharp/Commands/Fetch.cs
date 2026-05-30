@@ -76,7 +76,7 @@ namespace LibGit2Sharp
 
                 fetchOptions.ProxyOptions = options.ProxyOptions.CreateGitProxyOptions();
 
-                Proxy.git_remote_fetch(remoteHandle, refspecs, fetchOptions, logMessage);
+                Proxy.git_remote_fetch(remoteHandle, refspecs, ref fetchOptions, logMessage);
             }
 
         }

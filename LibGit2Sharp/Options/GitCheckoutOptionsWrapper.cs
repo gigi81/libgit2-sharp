@@ -3,17 +3,17 @@
 namespace LibGit2Sharp.Core
 {
     /// <summary>
-    /// A wrapper around the native GitCheckoutOpts structure. This class is responsible
+    /// A wrapper around the native GitCheckoutOptions structure. This class is responsible
     /// for the managed objects that the native code points to.
     /// </summary>
-    internal class GitCheckoutOptsWrapper : IDisposable
+    internal class GitCheckoutOptionsWrapper : IDisposable
     {
         /// <summary>
-        /// Create wrapper around <see cref="GitCheckoutOpts"/> from <see cref="CheckoutOptions"/>.
+        /// Create wrapper around <see cref="GitCheckoutOptions"/> from <see cref="CheckoutOptions"/>.
         /// </summary>
-        /// <param name="options">Options to create native GitCheckoutOpts structure from.</param>
+        /// <param name="options">Options to create native GitCheckoutOptions structure from.</param>
         /// <param name="paths">Paths to checkout.</param>
-        public GitCheckoutOptsWrapper(IConvertableToGitCheckoutOpts options, FilePath[] paths = null)
+        public GitCheckoutOptionsWrapper(IConvertableToGitCheckoutOpts options, FilePath[] paths = null)
         {
             Callbacks = options.GenerateCallbacks();
 
@@ -22,7 +22,7 @@ namespace LibGit2Sharp.Core
                 PathArray = GitStrArrayManaged.BuildFrom(paths);
             }
 
-            Options = new GitCheckoutOpts
+            Options = new GitCheckoutOptions
             {
                 version = 1,
                 checkout_strategy = options.CheckoutStrategy,
@@ -36,7 +36,7 @@ namespace LibGit2Sharp.Core
         /// <summary>
         /// Native struct to pass to libgit.
         /// </summary>
-        public GitCheckoutOpts Options { get; set; }
+        public GitCheckoutOptions Options { get; set; }
 
         /// <summary>
         /// The managed class mapping native callbacks into the

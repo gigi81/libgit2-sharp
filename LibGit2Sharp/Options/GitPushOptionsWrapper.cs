@@ -7,14 +7,16 @@ namespace LibGit2Sharp.Core
     /// </summary>
     internal class GitPushOptionsWrapper : IDisposable
     {
+        private GitPushOptions options;
+
         public GitPushOptionsWrapper() : this(new GitPushOptions()) { }
 
         public GitPushOptionsWrapper(GitPushOptions pushOptions)
         {
-            this.Options = pushOptions;
+            options = pushOptions;
         }
 
-        public GitPushOptions Options { get; private set; }
+        public ref GitPushOptions Options => ref options;
 
         #region IDisposable
         private bool disposedValue = false; // To detect redundant calls
@@ -23,8 +25,8 @@ namespace LibGit2Sharp.Core
             if (disposedValue)
                 return;
 
-            this.Options.CustomHeaders.Dispose();
-            EncodingMarshaler.Cleanup(Options.ProxyOptions.Url);
+            options.CustomHeaders.Dispose();
+            EncodingMarshaler.Cleanup(options.ProxyOptions.Url);
             disposedValue = true;
         }
 
